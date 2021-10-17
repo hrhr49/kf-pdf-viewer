@@ -82,7 +82,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   const [outline, setOutline] = useState<OutlineNode[] | null>(null);
   const textLoadDeferred = useRef(new Deferred<void>());
 
-  const [url, setUrl] = useState('test.pdf');
+  const [url, setUrl] = useState(isDev ? 'test.pdf' : '');
   const [numPages, setNumPages] = useState(0);
   // const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const [rotate, {
@@ -116,14 +116,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   }] = useFlag(true);
 
   const [pageTexts, setPageTexts] = useState<string[]>([]);
-  const [isLoadingText, setIsLoadingText] = useState<boolean>(true);
   const [keywordHitPages, setKeywordHitPages] = useState<Set<number>>(new Set([]));
-
-  useEffect(() => {
-    if (!isLoadingText) {
-      textLoadDeferred.current.resolve(null);
-    }
-  }, [isLoadingText]);
 
   const searchText = async (keyword: string) => {
     // wait until text loading is finished
@@ -200,7 +193,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
       });
       const texts: string[] = await Promise.all(promises);
       setPageTexts(texts);
-      setIsLoadingText(false);
+      textLoadDeferred.current.resolve(null);
     })();
   };
 
@@ -400,7 +393,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   }, [zoomSet, height, pageHeight, scale]);
 
   const search = async () => {
-    if (!pdf || !outline) return;
+    if (!pdf) return;
     if (isModalOpen) return;
 
     const newKeyword = await inputBox.showInputBox({

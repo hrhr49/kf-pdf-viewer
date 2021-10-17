@@ -10,6 +10,7 @@ import {
   unwrapIpcResult,
   canUseIpcApi,
 } from '../ipc-renderer';
+import {debounce} from 'throttle-debounce';
 
 interface AppProps {
 }
@@ -22,10 +23,10 @@ const App: React.FC<AppProps> = () => {
   const [keybindings, setKeybindings] = useState(defaultKeybindings);
 
   useEffect(() => {
-    const onResize = () => {
+    const onResize = debounce(250, () => {
       setScreenWidth(document.documentElement.clientWidth);
       setScreenHeight(document.documentElement.clientHeight);
-    };
+    });
     // TODO: debounce handler
     // TODO: orientationchange event
     window.addEventListener('resize', onResize);

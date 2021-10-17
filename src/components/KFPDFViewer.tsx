@@ -1,3 +1,4 @@
+import {throttle} from 'throttle-debounce';
 import {FC, useState, useEffect, useContext, useRef, useCallback} from 'react';
 import {
   Document,
@@ -114,6 +115,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   const [isKeywordHighlighted, {
     toggle: highlightToggle,
   }] = useFlag(true);
+  const [isScrolling, setIsScrolling] = useState(false);
 
   const [pageTexts, setPageTexts] = useState<string[]>([]);
   const [keywordHitPages, setKeywordHitPages] = useState<Set<number>>(new Set([]));
@@ -151,6 +153,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   useEffect(() => {
     const keyupHandler = () => {
       stopScroll();
+      setIsScrolling(false);
     };
 
     document.addEventListener('keyup', keyupHandler);
@@ -338,6 +341,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     const outerDiv = listOuterRef.current;
     if (outerDiv) {
       startScroll(outerDiv, {top: -SCROLL_STEP});
+      setIsScrolling(true);
     }
   }, []);
 
@@ -345,6 +349,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     const outerDiv = listOuterRef.current;
     if (outerDiv) {
       startScroll(outerDiv, {top: SCROLL_STEP});
+      setIsScrolling(true);
     }
   }, []);
 
@@ -352,6 +357,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     const outerDiv = listOuterRef.current;
     if (outerDiv) {
       startScroll(outerDiv, {top: -SCROLL_HALF_PAGE_STEP});
+      setIsScrolling(true);
     }
   }, []);
 
@@ -359,6 +365,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     const outerDiv = listOuterRef.current;
     if (outerDiv) {
       startScroll(outerDiv, {top: SCROLL_HALF_PAGE_STEP});
+      setIsScrolling(true);
     }
   }, []);
 
@@ -544,6 +551,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     isKeywordHighlighted,
     keyword,
     paddingSize: PADDING_SIZE,
+    isScrolling,
   };
 
   if (!url) {

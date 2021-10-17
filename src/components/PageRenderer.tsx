@@ -7,6 +7,7 @@ interface PageRendererDataType {
   isKeywordHighlighted: boolean;
   keyword: string;
   paddingSize: number;
+  isScrolling: boolean;
 }
 
 interface PageRendererProps {
@@ -47,6 +48,7 @@ const PageRenderer = ({index, style, data}: any) => {
     isKeywordHighlighted,
     keyword,
     paddingSize,
+    isScrolling,
   } = data;
 
   // const makeTextRenderer = (searchText: string) => (textItem: any) => highlightPattern(textItem.str, searchText);
@@ -55,6 +57,8 @@ const PageRenderer = ({index, style, data}: any) => {
     return <>{highlightPattern(str, keyword)}</>;
   }
 
+  // NOTE: textLayer rendering is very heavy while scrolling.
+  // so disable renderTextLayer while scrolling.
   return (
     <div style={{
       ...style,
@@ -69,7 +73,9 @@ const PageRenderer = ({index, style, data}: any) => {
         onLoadError={(error) => console.error('Error while loading page! ' + error.message)}
         onRenderError={(error) => console.error('Error while loading page! ' + error.message)}
         onGetTextError={(error) => console.error('Error while loading text layer items! ' + error.message)}
-
+        renderTextLayer={!isScrolling}
+        renderAnnotationLayer={false}
+        renderInteractiveForms={false}
       />
     </div>
   );

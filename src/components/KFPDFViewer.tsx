@@ -1,9 +1,9 @@
-import React, {FC, useState, useEffect, useContext, useRef, useCallback} from 'react';
+import {FC, useState, useEffect, useContext, useRef, useCallback} from 'react';
 import {
   // pdfjs,
   Document,
   Page,
-  Outline,
+  // Outline,
 } from 'react-pdf';
 
 import {
@@ -48,6 +48,11 @@ import {
 
 import { isDev } from '../env';
 
+import {
+  startScroll,
+  stopScroll,
+} from '../scroll';
+
 interface KFPDFViewerProps {
   keybindings: Keybindings;
   fullScreenOn: () => void;
@@ -59,6 +64,8 @@ interface KFPDFViewerProps {
 
 // TODO: to customizable
 const PADDING_SIZE = 5;
+const SCROLL_STEP = 25;
+const SCROLL_HALF_PAGE_STEP = 60;
 
 const PageRenderer = ({index, style, data}: any) => {
   // console.log({data});
@@ -81,6 +88,7 @@ const PageRenderer = ({index, style, data}: any) => {
     </div>
   );
 };
+
 
 const KFPDFViewer: FC<KFPDFViewerProps> = ({
   keybindings,
@@ -128,7 +136,22 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     toggle: sidebarToggle,
   }] = useFlag(false);
 
+  useEffect(() => {
+    const keyupHandler = () => {
+      stopScroll();
+    };
+
+    document.addEventListener('keyup', keyupHandler);
+
+    return () => {
+      document.removeEventListener('keyup', keyupHandler);
+    };
+  });
+
   const listRef = useRef<List | null>(null);
+  // NOTE: use outer element of <List> for scrolling.
+  // call `Element.scrollBy` method for scrolling
+  const listOuterRef = useRef<HTMLDivElement | null>(null);
   const docRef = useRef<any | null>(null);
 
   const commandCallbacksRef = useRef<CommandCallbacks | null>(null);
@@ -297,23 +320,33 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   //   // TODO
   // }
 
-  const scrollUp = useCallback(() => {
-    listRef.current?.scrollTo(scrollOffset - 30);
-  }, [scrollOffset]);
+  const scrollUp = useCallback(async () => {
+    const outerDiv = listOuterRef.current;
+    if (outerDiv) {
+      startScroll(outerDiv, {top: -SCROLL_STEP});
+    }
+  }, []);
 
   const scrollDown = useCallback(() => {
-    listRef.current?.scrollTo(scrollOffset + 30);
-  }, [scrollOffset]);
+    const outerDiv = listOuterRef.current;
+    if (outerDiv) {
+      startScroll(outerDiv, {top: SCROLL_STEP});
+    }
+  }, []);
 
   const scrollHalfPageUp = useCallback(() => {
-    // docRef.current?.scrollBy?.(0, -30);
-    listRef.current?.scrollTo(scrollOffset - (pageHeight + PADDING_SIZE) / 2);
-  }, [scrollOffset, pageHeight]);
+    const outerDiv = listOuterRef.current;
+    if (outerDiv) {
+      startScroll(outerDiv, {top: -SCROLL_HALF_PAGE_STEP});
+    }
+  }, []);
 
   const scrollHalfPageDown = useCallback(() => {
-    // docRef.current?.scrollBy?.(0, 30);
-    listRef.current?.scrollTo(scrollOffset + (pageHeight + PADDING_SIZE) / 2);
-  }, [scrollOffset, pageHeight]);
+    const outerDiv = listOuterRef.current;
+    if (outerDiv) {
+      startScroll(outerDiv, {top: SCROLL_HALF_PAGE_STEP});
+    }
+  }, []);
 
   const calcCurrentPageNumber = useCallback((): number => {
     return Math.floor((scrollOffset + height / 2) / (pageHeight + PADDING_SIZE)) + 1;
@@ -460,13 +493,13 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
       onDropFile={onDropFile}
     >
       <div
-        ref={docRef}
         style={{
           background: 'gray',
           filter: isColorInverted ? `invert(${invertColorRate})` : '',
         }}
       >
         <Document
+          inputRef={docRef}
           file={url}
           onLoadSuccess={onDocumentLoadSuccess}
           options={{
@@ -491,8 +524,9 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
               scale,
               rotate,
             }}
-            ref={listRef}
             onScroll={onScroll}
+            ref={listRef}
+            outerRef={listOuterRef}
           >
             {PageRenderer}
           </List>

@@ -57,8 +57,18 @@ const isCommand = (obj: any): obj is Command => {
   );
 };
 
+// interface CommandCallbackObjType {
+//   keyup: () => unknown;
+//   keydown: () => unknown;
+//   keypress: () => unknown;
+// };
+
+type CommandCallback = (
+  (() => unknown)
+);
+
 // type CommandCallbacks = Partial<Record<Command, () => unknown>>;
-type CommandCallbacks = Record<Command, () => unknown>;
+type CommandCallbacks = Record<Command, CommandCallback>;
 
 const commandToTitle = (command: Command): string => {
   // example: 'fullScreenOn' -> 'Full Screen On'

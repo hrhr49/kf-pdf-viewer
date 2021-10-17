@@ -1,4 +1,4 @@
-const {SUPPORTED_EXTENSIONS_WITHOUT_COMMA} = require('../src-common/media');
+const {SUPPORTED_EXTENSIONS_WITHOUT_COMMA} = require('../src-common/file');
 const {build, Platform} = require('electron-builder');
 
 build({

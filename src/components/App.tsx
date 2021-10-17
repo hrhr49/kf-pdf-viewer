@@ -2,6 +2,7 @@ import {useState, useEffect, useRef, useCallback, CSSProperties} from 'react';
 import {FullScreen, useFullScreenHandle} from 'react-full-screen';
 import {KFPDFViewer} from './KFPDFViewer';
 import { CommandPaletteProvider } from './CommandPaletteContext';
+import { OutlineSelectorProvider } from './OutlineSelectorContext';
 import { InputBoxProvider } from './InputBoxContext';
 import { defaultKeybindings, isPartialKeybindings } from '../keybindings';
 import {
@@ -25,6 +26,8 @@ const App: React.FC<AppProps> = () => {
       setScreenWidth(document.documentElement.clientWidth);
       setScreenHeight(document.documentElement.clientHeight);
     };
+    // TODO: debounce handler
+    // TODO: orientationchange event
     window.addEventListener('resize', onResize);
     return () => {
       window.removeEventListener('resize', onResize);
@@ -102,22 +105,26 @@ const App: React.FC<AppProps> = () => {
         <CommandPaletteProvider
           parentSelector={parentSelector}
         >
-          <InputBoxProvider
+          <OutlineSelectorProvider
             parentSelector={parentSelector}
           >
-            <div
-              style={divStyle}
+            <InputBoxProvider
+              parentSelector={parentSelector}
             >
-              <KFPDFViewer
-                keybindings={keybindings}
-                fullScreenOn={fullScreenOn}
-                fullScreenOff={fullScreenOff}
-                fullScreenToggle={fullScreenToggle}
-                height={screenHeight}
-                width={screenWidth}
-              />
-            </div>
-          </InputBoxProvider>
+              <div
+                style={divStyle}
+              >
+                <KFPDFViewer
+                  keybindings={keybindings}
+                  fullScreenOn={fullScreenOn}
+                  fullScreenOff={fullScreenOff}
+                  fullScreenToggle={fullScreenToggle}
+                  height={screenHeight}
+                  width={screenWidth}
+                />
+              </div>
+            </InputBoxProvider>
+          </OutlineSelectorProvider>
         </CommandPaletteProvider>
       </div>
     </FullScreen>

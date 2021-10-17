@@ -100,11 +100,49 @@ const defaultKeybindings: Keybindings = {
 
   showInfoOn: null,
   showInfoOff: null,
-  showInfoToggle: 'i',
+  showInfoToggle: 's',
 
-  scaleUp: '+',
-  scaleDown: '-',
-  scaleDefault: '=',
+  prevPage: ['p', 'shift+space', 'pageup',],
+  nextPage: ['n', 'space', 'pagedown'],
+  firstPage: ['g', 'ctrl+home'],
+  lastPage: ['G', 'ctrl+end'],
+  goToPage: ['ctrl+g', 'command+g'],
+
+  zoomReset: '=',
+  zoomIn: '+',
+  zoomOut: '-',
+
+  fitWidth: 'w',
+  fitHeight: 'e',
+
+  scrollLeft: 'h',
+  scrollRight: 'l',
+  scrollUp: 'k',
+  scrollDown: 'j',
+  scrollHalfPageDown: 'd',
+  scrollHalfPageUp: 'u',
+
+  scrollTop: ['home', 'z t'],
+  scrollBottom: ['end', 'z b'],
+  scrollReset: 'M',
+
+  rotateRight: '>',
+  rotateLeft: '<',
+
+  colorInvert: 'i',
+  invertColorRateUp: ')',
+  invertColorRateDown: '(',
+
+  highlightToggle: '#',
+  sidebarToggle: 'b',
+
+  goToOutline: 'o',
+  goToOutlineRecursive: 'O',
+
+  search: '/',
+  pickSearchList: null,
+  forwardPageHistory: 'L',
+  backwardPageHistory: 'H',
 
   commandPaletteOpen: ['command+shift+p', 'ctrl+shift+p'],
   loadUrl: ['command+shift+u', 'ctrl+shift+u'],

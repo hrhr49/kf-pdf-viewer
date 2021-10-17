@@ -66,9 +66,9 @@ const PageRenderer = ({index, style, data}: any) => {
         scale={scale}
         rotate={rotate}
         customTextRenderer={isKeywordHighlighted ? textRenderer : undefined}
-        onLoadError={(error) => alert('Error while loading page! ' + error.message)}
-        onRenderError={(error) => alert('Error while loading page! ' + error.message)}
-        onGetTextError={(error) => alert('Error while loading text layer items! ' + error.message)}
+        onLoadError={(error) => console.error('Error while loading page! ' + error.message)}
+        onRenderError={(error) => console.error('Error while loading page! ' + error.message)}
+        onGetTextError={(error) => console.error('Error while loading text layer items! ' + error.message)}
 
       />
     </div>

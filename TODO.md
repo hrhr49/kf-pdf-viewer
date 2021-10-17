@@ -8,8 +8,8 @@
     - horizontal scroll
     - search function
     - electron
+    - thumbnail
 
 * other
-    - use `useCallbak` for performance.
     - clean up source code.
     - improve sidebar style

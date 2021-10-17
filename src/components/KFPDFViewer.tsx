@@ -1,4 +1,4 @@
-import React, {FC, useState, useEffect, useContext, useRef} from 'react';
+import React, {FC, useState, useEffect, useContext, useRef, useCallback} from 'react';
 import {
   // pdfjs,
   Document,
@@ -17,22 +17,16 @@ import type {
 
 import {FixedSizeList as List} from 'react-window';
 
-import {
-  CommandPaletteContext,
-} from './CommandPaletteContext';
-import {
-  OutlineSelectorContext,
-} from './OutlineSelectorContext';
-import {
-  InputBoxContext,
-} from './InputBoxContext';
+import { CommandPaletteContext, } from './CommandPaletteContext';
+import { OutlineSelectorContext, } from './OutlineSelectorContext';
+import { InputBoxContext, } from './InputBoxContext';
 
 import {DropFileArea} from './DropFileArea';
 import {LandingPage} from './LandingPage';
 
-import type {
-  Keybindings,
-} from '../keybindings';
+import {SideBar} from './SideBar';
+
+import type { Keybindings, } from '../keybindings';
 
 import {useKeybindings} from '../hooks/use-keybindings';
 import {useFlag} from '../hooks/use-flag';
@@ -44,15 +38,15 @@ import {
   COMMANDS,
   commandToTitle,
 } from '../commands';
-import type {
-  AllCommandList,
-} from '../commands';
+import type { AllCommandList, } from '../commands';
 
 import {
   ipcRendererApi,
   unwrapIpcResult,
   canUseIpcApi,
 } from '../ipc-renderer';
+
+import { isDev } from '../env';
 
 interface KFPDFViewerProps {
   keybindings: Keybindings;
@@ -197,7 +191,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
       off: showInfoOff,
       toggle: showInfoToggle,
     }
-  ] = useFlag(true);
+  ] = useFlag(isDev);
 
   const commandPalette = useContext(CommandPaletteContext);
   const outlineSelector = useContext(OutlineSelectorContext);
@@ -209,17 +203,17 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     || inputBox.isOpen
   );
 
-  const loadUrl = React.useCallback((newUrl: string) => {
+  const loadUrl = useCallback((newUrl: string) => {
     setUrl(newUrl);
   }, []);
 
-  const onDropFile = React.useCallback((file: File) => {
+  const onDropFile = useCallback((file: File) => {
     const url = URL.createObjectURL(file);
     // console.log({url});
     loadUrl(url);
   }, [loadUrl]);
 
-  const jumpPage = (targetPageNumber: number) => {
+  const jumpPage = useCallback((targetPageNumber: number) => {
     if (!Number.isInteger(targetPageNumber)) return;
 
     if (targetPageNumber < 0) {
@@ -228,10 +222,15 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     }
     targetPageNumber = Math.max(1, Math.min(numPages, targetPageNumber));
     listRef.current?.scrollToItem(targetPageNumber - 1);
-  };
+  }, [numPages]);
 
-  const firstPage = () => jumpPage(1);
-  const lastPage = () => jumpPage(-1);
+  const firstPage = useCallback(() => {
+    jumpPage(1);
+  }, [jumpPage]);
+
+  const lastPage = useCallback(() => {
+    jumpPage(-1);
+  }, [jumpPage]);
 
   const goToPage = async () => {
     if (isModalOpen) return;
@@ -291,74 +290,72 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     jumpPage(targetPageNumber);
   };
 
-  const scrollLeft = () => {
-    // TODO
-    // console.log(docRef.current);
-    // docRef.current?.scrollBy?.(-30, 0);
-  }
-  const scrollRight = () => {
-    // TODO
-    // docRef.current?.scrollBy?.(30, 0);
-  }
-  const scrollUp = () => {
-    // docRef.current?.scrollBy?.(0, -30);
+  // const scrollLeft = () => {
+  //   // TODO
+  // }
+  // const scrollRight = () => {
+  //   // TODO
+  // }
+
+  const scrollUp = useCallback(() => {
     listRef.current?.scrollTo(scrollOffset - 30);
-  }
-  const scrollDown = () => {
-    // docRef.current?.scrollBy?.(0, 30);
+  }, [scrollOffset]);
+
+  const scrollDown = useCallback(() => {
     listRef.current?.scrollTo(scrollOffset + 30);
-  }
-  const scrollHalfPageUp = () => {
+  }, [scrollOffset]);
+
+  const scrollHalfPageUp = useCallback(() => {
     // docRef.current?.scrollBy?.(0, -30);
     listRef.current?.scrollTo(scrollOffset - (pageHeight + PADDING_SIZE) / 2);
-  }
-  const scrollHalfPageDown = () => {
+  }, [scrollOffset, pageHeight]);
+
+  const scrollHalfPageDown = useCallback(() => {
     // docRef.current?.scrollBy?.(0, 30);
     listRef.current?.scrollTo(scrollOffset + (pageHeight + PADDING_SIZE) / 2);
-  }
+  }, [scrollOffset, pageHeight]);
 
-  const calcCurrentPageNumber = (): number => {
+  const calcCurrentPageNumber = useCallback((): number => {
     return Math.floor((scrollOffset + height / 2) / (pageHeight + PADDING_SIZE)) + 1;
-  };
+  }, [scrollOffset, height, pageHeight]);
 
-  const scrollTop = () => {
+  const scrollTop = useCallback(() => {
     const pageNumber = calcCurrentPageNumber();
     listRef.current?.scrollTo(PADDING_SIZE + (pageHeight + PADDING_SIZE) * (pageNumber - 1));
+  }, [calcCurrentPageNumber, pageHeight]);
 
-  };
-
-  const scrollBottom = () => {
+  const scrollBottom = useCallback(() => {
     const pageNumber = calcCurrentPageNumber();
     listRef.current?.scrollTo(PADDING_SIZE - height + (pageHeight + PADDING_SIZE) * pageNumber);
-  };
+  }, [calcCurrentPageNumber, height, pageHeight]);
 
-  const nextPage = () => {
+  const nextPage = useCallback(() => {
     listRef.current?.scrollTo(scrollOffset + (pageHeight + PADDING_SIZE));
-  };
+  }, [scrollOffset, pageHeight]);
 
-  const prevPage = () => {
+  const prevPage = useCallback(() => {
     listRef.current?.scrollTo(scrollOffset - (pageHeight + PADDING_SIZE));
-  };
+  }, [scrollOffset, pageHeight]);
 
-  const fitWidth = () => {
+  const fitWidth = useCallback(() => {
     zoomSet(width / (pageWidth / scale));
-  };
+  }, [zoomSet, width, pageWidth, scale]);
 
-  const fitHeight = () => {
+  const fitHeight = useCallback(() => {
     zoomSet(height / (pageHeight / scale));
-  };
+  }, [zoomSet, height, pageHeight, scale]);
 
-  const doNothing = () => {};
-  const notImplemented = () => {
+  const doNothing = useCallback(() => {
+  }, []);
+
+  const notImplemented = useCallback(() => {
     alert('sorry not implemented yet');
-  };
+  }, []);
 
-  const onScroll = ({scrollOffset}: {scrollOffset: number}) => {
+  const onScroll = useCallback(({scrollOffset}: {scrollOffset: number}) => {
     setScrollOffset(scrollOffset);
-  };
-    // scrollDirection: ScrollDirection;
-    // scrollOffset: number;
-    // scrollUpdateWasRequested: boolean;
+  }, []);
+
   const commandCallbacks: CommandCallbacks = {
     doNothing,
 
@@ -383,8 +380,8 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
 
     fitWidth,
     fitHeight,
-    scrollLeft,
-    scrollRight,
+    scrollLeft: notImplemented,
+    scrollRight: notImplemented,
     scrollUp,
     scrollDown,
     scrollHalfPageDown,
@@ -479,18 +476,11 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
           loading={<div>loading...</div>}
           onItemClick={({pageNumber}) => {jumpPage(Number(pageNumber))}}
         >
-          <div
-            style={{
-              position: 'fixed',
-              zIndex: 2,
-              display: isSidebarOpen ? 'block' : 'none',
-            }}
-          >
-            <Outline
+          <SideBar
               onItemClick={({pageNumber}) => {jumpPage(Number(pageNumber))}}
               onLoadSuccess={onOutlineLoadSuccess}
-            />
-          </div>
+              isOpen={isSidebarOpen}
+          />
           <List
             height={height}
             itemCount={numPages}

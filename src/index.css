@@ -11,3 +11,20 @@
   height: auto !important;
   margin: auto;
 }
+
+.react-pdf__Outline {
+  width: 200px;
+  height: 100vh;
+  background-color: #eee;
+  /* border: solid 1px blue; */
+  overflow: scroll;
+}
+.react-pdf__Outline ul {
+  padding-left: 20px;
+  list-style: none;
+}
+
+.react-pdf__Outline li {
+  margin: 5px;
+  text-align: left;
+}

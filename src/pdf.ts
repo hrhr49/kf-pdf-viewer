@@ -1,5 +1,6 @@
 import type {
-  PDFDocumentProxy
+  PDFDocumentProxy,
+  PDFPageProxy,
 } from 'pdfjs-dist/types/display/api';
 
 
@@ -36,8 +37,17 @@ const outlineNodeToPageNumber = async ({
   return pageIndex + 1;
 };
 
+const getPageText = async (page: PDFPageProxy) => {
+  const tokenizedText = await page.getTextContent();
+  const pageText = tokenizedText.items
+    .map(token => (token as any).str || '')
+    .join('');
+  return pageText;
+};
+
 export {
   outlineNodeToPageNumber,
+  getPageText,
 };
 
 export type {

@@ -38,7 +38,11 @@ const COMMANDS = [
   'sidebarToggle',
   'goToOutline',
   'goToOutlineRecursive',
+
   'search',
+  'searchNext',
+  'searchPrev',
+
   'pickSearchList',
   'forwardPageHistory',
   'backwardPageHistory',

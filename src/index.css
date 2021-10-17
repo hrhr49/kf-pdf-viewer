@@ -28,3 +28,36 @@
   margin: 5px;
   text-align: left;
 }
+
+/* div.react-pdf__Document { */
+/*   line-height: initial; */
+/*   top: 0; */
+/*   bottom: 0; */
+/*   left: 0; */
+/*   right: 0; */
+/*   /1* width: 100vw; *1/ */
+/*   /1* height: 100vh; *1/ */
+/*   margin: auto; */
+/*   display: flex; */
+/*   align-items: center; */
+/*   flex-direction: column; */
+/*   background-color: transparent; */
+/*   /1* overflow: scroll; *1/ */
+/* } */
+
+/* div.react-pdf__Page { */
+/*   position: relative; */
+/*   display: flex; */
+/*   align-items: center; */
+/*   flex-direction: column; */
+/*   top: 0; */
+/*   bottom: 0; */
+/*   left: 0; */
+/*   right: 0; */
+/*   margin: auto; */
+/* } */
+
+/* canvas.react-pdf__Page__canvas { */
+/*   height: auto !important; */
+/*   box-shadow: 0 0 8px black; */
+/* } */

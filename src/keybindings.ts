@@ -102,8 +102,8 @@ const defaultKeybindings: Keybindings = {
   showInfoOff: null,
   showInfoToggle: 's',
 
-  prevPage: ['p', 'shift+space', 'pageup',],
-  nextPage: ['n', 'space', 'pagedown'],
+  prevPage: [/*'p',*/ 'shift+space', 'pageup',],
+  nextPage: [/*'n',*/ 'space', 'pagedown'],
   firstPage: ['g', 'ctrl+home'],
   lastPage: ['G', 'ctrl+end'],
   goToPage: ['ctrl+g', 'command+g'],
@@ -140,6 +140,9 @@ const defaultKeybindings: Keybindings = {
   goToOutlineRecursive: 'O',
 
   search: '/',
+  searchNext: 'n',
+  searchPrev: 'N',
+
   pickSearchList: null,
   forwardPageHistory: 'L',
   backwardPageHistory: 'H',

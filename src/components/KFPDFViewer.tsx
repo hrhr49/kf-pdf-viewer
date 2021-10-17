@@ -1,13 +1,14 @@
 import {FC, useState, useEffect, useContext, useRef, useCallback} from 'react';
 import {
-  // pdfjs,
   Document,
-  Page,
-  // Outline,
 } from 'react-pdf';
 
 import {
+  Deferred,
+} from '../deferred';
+import {
   outlineNodeToPageNumber,
+  getPageText,
 } from '../pdf';
 
 import type {
@@ -25,6 +26,8 @@ import {DropFileArea} from './DropFileArea';
 import {LandingPage} from './LandingPage';
 
 import {SideBar} from './SideBar';
+import {PageRenderer} from './PageRenderer';
+import type {PageRendererDataType} from './PageRenderer';
 
 import type { Keybindings, } from '../keybindings';
 
@@ -67,29 +70,6 @@ const PADDING_SIZE = 5;
 const SCROLL_STEP = 25;
 const SCROLL_HALF_PAGE_STEP = 60;
 
-const PageRenderer = ({index, style, data}: any) => {
-  // console.log({data});
-  const {
-    scale,
-    rotate,
-  } = data;
-
-  return (
-    <div style={{
-      ...style,
-      top: `${parseFloat(style.top) + PADDING_SIZE}px`,
-    }}
-    >
-      <Page
-        pageNumber={index + 1}
-        scale={scale}
-        rotate={rotate}
-      />
-    </div>
-  );
-};
-
-
 const KFPDFViewer: FC<KFPDFViewerProps> = ({
   keybindings,
   fullScreenOn,
@@ -100,6 +80,8 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
 }) => {
   const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null);
   const [outline, setOutline] = useState<OutlineNode[] | null>(null);
+  const textLoadDeferred = useRef(new Deferred<void>());
+
   const [url, setUrl] = useState('test.pdf');
   const [numPages, setNumPages] = useState(0);
   // const [currentPageNumber, setCurrentPageNumber] = useState(1);
@@ -128,6 +110,55 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     set: zoomSet,
   }] = useClipedValue(1, {min: 0.1, max: 4, step: 0.1});
 
+  const [keyword, setKeyword] = useState('');
+  const [isKeywordHighlighted, {
+    toggle: highlightToggle,
+  }] = useFlag(true);
+
+  const [pageTexts, setPageTexts] = useState<string[]>([]);
+  const [isLoadingText, setIsLoadingText] = useState<boolean>(true);
+  const [keywordHitPages, setKeywordHitPages] = useState<Set<number>>(new Set([]));
+
+  useEffect(() => {
+    if (!isLoadingText) {
+      textLoadDeferred.current.resolve(null);
+    }
+  }, [isLoadingText]);
+
+  const searchText = async (keyword: string) => {
+    // wait until text loading is finished
+    await textLoadDeferred.current.promise;
+
+    console.log('await finished');
+    console.assert(pageTexts.length > 0);
+    // if (pageTexts === null) {
+    //   console.error('loading PDF text yet...');
+    //   return;
+    // }
+    setKeyword(keyword);
+    // console.log(pageTexts);
+    // console.log({keyword})
+    const hittedPages = pageTexts.map((text, idx) => {
+      const pageNumber = idx + 1;
+      if (text.includes(keyword)) {
+        return pageNumber;
+      } else {
+        return -1;
+      }
+    })
+    .filter((i) => i > 0);
+
+    // console.log((hittedPages));
+    // console.log(new Set(hittedPages));
+    if (hittedPages.length > 0) {
+      setKeywordHitPages(new Set(hittedPages));
+    } else {
+      alert(`can not find keyword: ${keyword}`);
+    }
+    // console.log('hittedPages');
+    // console.log(hittedPages);
+  };
+
   // const pageWidth = pageWidthRaw * scale;
   const pageHeight = ((rotate / 90) % 2 === 0) ? pageHeightRaw * scale : pageWidthRaw * scale;
   const pageWidth = ((rotate / 90) % 2 === 0) ? pageWidthRaw * scale : pageHeightRaw * scale;
@@ -146,7 +177,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     return () => {
       document.removeEventListener('keyup', keyupHandler);
     };
-  });
+  }, []);
 
   const listRef = useRef<List | null>(null);
   // NOTE: use outer element of <List> for scrolling.
@@ -176,6 +207,20 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
       // const pageHeightRaw = page.view[3];
       setPageWidthRaw(pageWidthRaw);
       setPageHeightRaw(pageHeightRaw);
+    })();
+
+    (async () => {
+      const promises = new Array(pdf.numPages)
+      .fill(null)
+      .map(async (_, idx) => {
+        const pageNumber = idx + 1;
+        const page = await pdf.getPage(pageNumber);
+        const text: string = await getPageText(page);
+        return text;
+      });
+      const texts: string[] = await Promise.all(promises);
+      setPageTexts(texts);
+      setIsLoadingText(false);
     })();
   };
 
@@ -378,6 +423,51 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     zoomSet(height / (pageHeight / scale));
   }, [zoomSet, height, pageHeight, scale]);
 
+  const search = async () => {
+    console.log('search');
+    if (!pdf || !outline) return;
+    if (isModalOpen) return;
+
+    const newKeyword = await inputBox.showInputBox({
+      prompt: 'input word to search'
+    });
+    if (newKeyword) {
+      searchText(newKeyword);
+    }
+  };
+
+  const searchNext = async () => {
+    const pageNumber = calcCurrentPageNumber();
+    let tmpPageNumber = pageNumber + 1;
+    while (true) {
+      if (keywordHitPages.has(tmpPageNumber)) {
+        break;
+      }
+      tmpPageNumber++;
+      if (tmpPageNumber > numPages) {
+        alert('can not find next search result');
+        return;
+      }
+    }
+    jumpPage(tmpPageNumber);
+  };
+
+  const searchPrev = async () => {
+    const pageNumber = calcCurrentPageNumber();
+    let tmpPageNumber = pageNumber - 1;
+    while (true) {
+      if (keywordHitPages.has(tmpPageNumber)) {
+        break;
+      }
+      tmpPageNumber--;
+      if (tmpPageNumber < 1) {
+        alert('can not find next search result');
+        return;
+      }
+    }
+    jumpPage(tmpPageNumber);
+  };
+
   const doNothing = useCallback(() => {
   }, []);
 
@@ -429,13 +519,16 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     invertColorRateUp,
     invertColorRateDown,
 
-    highlightToggle: notImplemented,
+    highlightToggle,
     sidebarToggle,
 
     goToOutline,
     goToOutlineRecursive,
 
-    search: notImplemented,
+    search,
+    searchNext,
+    searchPrev,
+
     pickSearchList: notImplemented,
     forwardPageHistory: notImplemented,
     backwardPageHistory: notImplemented,
@@ -476,6 +569,14 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   useKeybindings<AllCommandList>({
     keybindings, commandCallbacks, commands: COMMANDS
   });
+
+  const itemData: PageRendererDataType = {
+    scale,
+    rotate,
+    isKeywordHighlighted,
+    keyword,
+    paddingSize: PADDING_SIZE,
+  };
 
   if (!url) {
     return (
@@ -520,10 +621,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
             itemSize={pageHeight + PADDING_SIZE}
             width={width}
             overscanCount={2}
-            itemData={{
-              scale,
-              rotate,
-            }}
+            itemData={itemData}
             onScroll={onScroll}
             ref={listRef}
             outerRef={listOuterRef}

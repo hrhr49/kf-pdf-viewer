@@ -129,15 +129,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     // wait until text loading is finished
     await textLoadDeferred.current.promise;
 
-    console.log('await finished');
-    console.assert(pageTexts.length > 0);
-    // if (pageTexts === null) {
-    //   console.error('loading PDF text yet...');
-    //   return;
-    // }
     setKeyword(keyword);
-    // console.log(pageTexts);
-    // console.log({keyword})
     const hittedPages = pageTexts.map((text, idx) => {
       const pageNumber = idx + 1;
       if (text.includes(keyword)) {
@@ -148,15 +140,11 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     })
     .filter((i) => i > 0);
 
-    // console.log((hittedPages));
-    // console.log(new Set(hittedPages));
     if (hittedPages.length > 0) {
       setKeywordHitPages(new Set(hittedPages));
     } else {
       alert(`can not find keyword: ${keyword}`);
     }
-    // console.log('hittedPages');
-    // console.log(hittedPages);
   };
 
   // const pageWidth = pageWidthRaw * scale;
@@ -188,23 +176,15 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   const commandCallbacksRef = useRef<CommandCallbacks | null>(null);
 
   const onDocumentLoadSuccess = (pdf: PDFDocumentProxy) => {
-    console.log('loaded pdf successfully');
-    console.log({pdf});
-
     setPdf(pdf);
     setNumPages(pdf.numPages);
 
     (async () => {
       // TODO: consider variable page size.
       const page = await pdf.getPage(1);
-      // const pageWidthRaw = page.view[2];
-      // const pageHeightRaw = page.view[3];
       const [x1, y1, x2, y2] = page.view;
       const pageWidthRaw = x2 - x1;
       const pageHeightRaw = y2 - y1;
-      console.log({page});
-      // const pageWidthRaw = page.view[2];
-      // const pageHeightRaw = page.view[3];
       setPageWidthRaw(pageWidthRaw);
       setPageHeightRaw(pageHeightRaw);
     })();
@@ -225,9 +205,6 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   };
 
   const onOutlineLoadSuccess = (outline: OutlineNode[]) => {
-    console.log('loaded outline successfully');
-    console.log({outline});
-
     setOutline(outline);
   };
 
@@ -277,7 +254,6 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
 
   const onDropFile = useCallback((file: File) => {
     const url = URL.createObjectURL(file);
-    // console.log({url});
     loadUrl(url);
   }, [loadUrl]);
 
@@ -424,7 +400,6 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   }, [zoomSet, height, pageHeight, scale]);
 
   const search = async () => {
-    console.log('search');
     if (!pdf || !outline) return;
     if (isModalOpen) return;
 

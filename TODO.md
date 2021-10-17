@@ -4,11 +4,10 @@
     - support PDF with variable page size
 
 * add
-    - smooth scrolling
     - horizontal scroll
-    - search function
     - electron
     - thumbnail
+    - prefix number before keyboard shortcut to do the command n-times like vim.
 
 * other
     - clean up source code.

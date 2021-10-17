@@ -8,15 +8,15 @@ const useCyclicValue = <T>(
   const callbacks = {
     next: useCallback(()  => {
       setIndex((curIndex) => (curIndex + 1) % values.length);
-    }, [values]),
+    }, [values.length]),
 
     prev: useCallback(()  => {
       setIndex((curIndex) => (curIndex - 1 + values.length) % values.length);
-    }, [values]),
+    }, [values.length]),
 
     default: useCallback(() => {
       setIndex(0);
-    }, [values]),
+    }, []),
   } as const;
 
   return [values[index], callbacks] as const;

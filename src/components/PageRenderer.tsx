@@ -1,4 +1,4 @@
-import {CSSProperties, useMemo} from 'react';
+import {CSSProperties} from 'react';
 import {Page} from 'react-pdf';
 
 interface PageRendererDataType {
@@ -22,9 +22,6 @@ const highlightPattern = (text: string, pattern: any) => {
     return text;
   }
 
-  // console.log({text});
-  // console.log({pattern});
-
   const matches = text.match(pattern);
 
   return (
@@ -35,7 +32,6 @@ const highlightPattern = (text: string, pattern: any) => {
         key={index}
         style={{
           background: 'rgba(255, 0, 0, 0.3)',
-          // color: 'green',
         }}
       >
         {matches[index]}

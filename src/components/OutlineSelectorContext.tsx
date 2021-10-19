@@ -62,3 +62,7 @@ export {
   OutlineSelectorContext,
   OutlineSelectorProvider,
 };
+
+export type {
+  OutlineNodeItem,
+};

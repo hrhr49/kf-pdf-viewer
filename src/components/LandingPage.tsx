@@ -54,7 +54,6 @@ const LandingPage: FC<LandingPageProps> = ({
     <h3>How to Use</h3>
     <ul>
       <li>command palette: <Keyboard keys={keybindings.commandPaletteOpen} /></li>
-      <li>load URL: <Keyboard keys={keybindings.loadUrl} /> (supported URL depends <a href="https://github.com/cookpete/react-player">react-player</a></li>
       <li>load File: drag and drop media file here (supported file depends your browser)</li>
     </ul>
 

@@ -8,7 +8,7 @@ import type {
   IpcResult,
 } from 'src-common/ipc-common';
 
-const canUseIpcApi = () => IPC_API_NAME in window;
+const isAvailableIpcApi = () => IPC_API_NAME in window;
 
 declare global {
   interface Window {
@@ -26,7 +26,7 @@ const createDummyIpcRendererApi = (): IpcApi => {
   return ipcRendererApi as IpcApi;
 };
 
-const ipcRendererApi: IpcApi = canUseIpcApi() ? window[IPC_API_NAME] : createDummyIpcRendererApi();
+const ipcRendererApi: IpcApi = isAvailableIpcApi() ? window[IPC_API_NAME] : createDummyIpcRendererApi();
 
 const unwrapIpcResult = <T>(result: IpcResult<T>): T => {
   if (result.isOk) {
@@ -39,7 +39,7 @@ const unwrapIpcResult = <T>(result: IpcResult<T>): T => {
 };
 
 export {
-  canUseIpcApi,
+  isAvailableIpcApi,
   ipcRendererApi,
   unwrapIpcResult,
 };

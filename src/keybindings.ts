@@ -112,8 +112,8 @@ const defaultKeybindings: Keybindings = {
   zoomIn: '+',
   zoomOut: '-',
 
-  fitWidth: 'w',
-  fitHeight: 'e',
+  zoomFitWidth: 'w',
+  zoomFitHeight: 'e',
 
   scrollLeft: 'h',
   scrollRight: 'l',
@@ -148,7 +148,6 @@ const defaultKeybindings: Keybindings = {
   backwardPageHistory: 'H',
 
   commandPaletteOpen: ['command+shift+p', 'ctrl+shift+p'],
-  loadUrl: ['command+shift+u', 'ctrl+shift+u'],
 };
 
 export {

@@ -4,12 +4,6 @@ import {KFPDFViewer} from './KFPDFViewer';
 import { CommandPaletteProvider } from './CommandPaletteContext';
 import { OutlineSelectorProvider } from './OutlineSelectorContext';
 import { InputBoxProvider } from './InputBoxContext';
-import { defaultKeybindings, isPartialKeybindings } from '../keybindings';
-import {
-  ipcRendererApi,
-  unwrapIpcResult,
-  canUseIpcApi,
-} from '../ipc-renderer';
 import {debounce} from 'throttle-debounce';
 
 interface AppProps {
@@ -20,14 +14,12 @@ const App: React.FC<AppProps> = () => {
   const [fullScreen, setFullScreen] = useState(false);
   const [screenWidth, setScreenWidth] = useState(document.documentElement.clientWidth);
   const [screenHeight, setScreenHeight] = useState(document.documentElement.clientHeight);
-  const [keybindings, setKeybindings] = useState(defaultKeybindings);
 
   useEffect(() => {
     const onResize = debounce(250, () => {
       setScreenWidth(document.documentElement.clientWidth);
       setScreenHeight(document.documentElement.clientHeight);
     });
-    // TODO: debounce handler
     // TODO: orientationchange event
     window.addEventListener('resize', onResize);
     return () => {
@@ -35,27 +27,6 @@ const App: React.FC<AppProps> = () => {
     }
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      if (!canUseIpcApi()) return;
-      try {
-        const rawObj = unwrapIpcResult(await ipcRendererApi.loadKeybindings());
-
-        // console.log({rawObj});
-        if (rawObj) {
-          if (isPartialKeybindings(rawObj)) {
-            setKeybindings({
-              ...defaultKeybindings,
-              ...rawObj,
-            });
-          }
-        }
-      } catch (e) {
-        console.error(e);
-        alert(`error occrus while loading keybindings.\n${String(e)}`);
-      }
-    })();
-  }, []);
 
   const fullScrenHandle = useFullScreenHandle();
 
@@ -97,6 +68,12 @@ const App: React.FC<AppProps> = () => {
     }
   };
 
+  const fullScreenCommandCallbacks = {
+    fullScreenOn,
+    fullScreenOff,
+    fullScreenToggle,
+  };
+
   return (
     <FullScreen
       handle={fullScrenHandle}
@@ -116,10 +93,7 @@ const App: React.FC<AppProps> = () => {
                 style={divStyle}
               >
                 <KFPDFViewer
-                  keybindings={keybindings}
-                  fullScreenOn={fullScreenOn}
-                  fullScreenOff={fullScreenOff}
-                  fullScreenToggle={fullScreenToggle}
+                  fullScreenCommandCallbacks={fullScreenCommandCallbacks}
                   height={screenHeight}
                   width={screenWidth}
                 />

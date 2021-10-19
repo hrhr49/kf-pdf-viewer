@@ -313,3 +313,7 @@ const createQuickPickContext = <Item extends HasName>({
 export {
   createQuickPickContext,
 };
+
+export type {
+  QuickPickGlobals,
+};

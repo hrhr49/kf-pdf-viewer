@@ -256,3 +256,7 @@ export {
   InputBoxContext,
   InputBoxProvider,
 };
+
+export type {
+  InputBoxGlobals,
+};

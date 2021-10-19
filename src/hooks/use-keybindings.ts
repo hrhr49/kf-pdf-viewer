@@ -12,12 +12,16 @@ const useKeybindings = <AllCommandList extends readonly string[]>({
   commands,
   bindGlobal = false,
   enabled = true,
+  onBeforeCommand,
+  onAfterCommand,
 }: {
   keybindings: Record<AllCommandList[number], Keys>;
   commandCallbacks: Record<AllCommandList[number], () => unknown>;
   commands: AllCommandList;
   bindGlobal?: boolean;
   enabled?: boolean;
+  onBeforeCommand?: (command: AllCommandList[number]) => void;
+  onAfterCommand?: (command: AllCommandList[number]) => void;
 }) => {
   const commandCallbacksRef = useRef(commandCallbacks);
   commandCallbacksRef.current = commandCallbacks;
@@ -33,7 +37,9 @@ const useKeybindings = <AllCommandList extends readonly string[]>({
             keys,
             (event) => {
               event.preventDefault();
+              onBeforeCommand?.(command);
               commandCallbacksRef.current[command]?.();
+              onAfterCommand?.(command);
             }
           );
         } else {
@@ -41,7 +47,9 @@ const useKeybindings = <AllCommandList extends readonly string[]>({
             keys,
             (event) => {
               event.preventDefault();
+              onBeforeCommand?.(command);
               commandCallbacksRef.current[command]?.();
+              onAfterCommand?.(command);
             }
           );
         }
@@ -57,8 +65,7 @@ const useKeybindings = <AllCommandList extends readonly string[]>({
         }
       });
     };
-  }, [keybindings, enabled, bindGlobal, commands]);
-
+  }, [keybindings, enabled, bindGlobal, commands, onBeforeCommand, onAfterCommand]);
 };
 
 export {

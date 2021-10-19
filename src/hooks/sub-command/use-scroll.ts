@@ -27,6 +27,7 @@ type UseScrollReturnType = [
 ];
 
 const useScrollCommand = ({
+  repeatCount,
   list,
   listOuterDiv,
   scrollStep,
@@ -35,6 +36,7 @@ const useScrollCommand = ({
   pageHeight,
   height,
 }: {
+  repeatCount: number;
   list: List | null;
   listOuterDiv: HTMLDivElement | null;
   scrollStep: number;
@@ -46,6 +48,9 @@ const useScrollCommand = ({
 
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
+
+  scrollStep *= Math.max(1, repeatCount);
+  scrollHalPageStep *= Math.max(1, repeatCount);
 
   useEffect(() => {
     const keyupHandler = () => {

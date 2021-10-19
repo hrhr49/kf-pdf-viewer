@@ -147,7 +147,7 @@ const defaultKeybindings: Keybindings = {
   forwardPageHistory: 'L',
   backwardPageHistory: 'H',
 
-  commandPaletteOpen: ['command+shift+p', 'ctrl+shift+p'],
+  commandPaletteOpen: [':', 'command+shift+p', 'ctrl+shift+p'],
 };
 
 export {

@@ -13,7 +13,11 @@ type UseColorCommandReturnType = [
   Record<ColorCommand, CommandCallback>
 ];
 
-const useColorCommand = (): UseColorCommandReturnType => {
+const useColorCommand = ({
+  repeatCount
+}: {
+  repeatCount: number
+}): UseColorCommandReturnType => {
   const [isColorInverted, {
     toggle: colorInvert,
   }] = useFlag(false);
@@ -21,7 +25,7 @@ const useColorCommand = (): UseColorCommandReturnType => {
   const [invertColorRate, {
     up: invertColorRateUp,
     down: invertColorRateDown,
-  }] = useClipedValue(1, {min: 0.05, max: 1, step: 0.05});
+  }] = useClipedValue(1, {min: 0.05, max: 1, step: 0.05 * Math.max(1, repeatCount)});
 
   return [
     {

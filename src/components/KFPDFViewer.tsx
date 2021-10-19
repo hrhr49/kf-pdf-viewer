@@ -26,6 +26,7 @@ import type { Keybindings } from '../keybindings';
 
 import {useKeybindings} from '../hooks/use-keybindings';
 import {useFlag} from '../hooks/use-flag';
+import {useRepeatCommand} from '../hooks/use-repeat-command';
 
 import {
   CommandCallback,
@@ -95,15 +96,17 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     toggle: sidebarToggle,
   }] = useFlag(false);
 
+  const [repeatCount, resetRepeatCount] = useRepeatCommand();
+
   const [
     {isColorInverted, invertColorRate},
     colorCommandCallbacks,
-  ] = useColorCommand();
+  ] = useColorCommand({repeatCount});
 
   const [
     {scale, /* pageWidth, */ pageHeight},
     zoomCommandCallbacks,
-  ] = useZoomCommand({width, height, pageWidthRaw, pageHeightRaw, rotate});
+  ] = useZoomCommand({repeatCount, width, height, pageWidthRaw, pageHeightRaw, rotate});
   useIpcApi({setUrl, setKeybindings});
 
   const [
@@ -147,6 +150,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     scrollCommandCallbacks,
     {onScroll}
   ] = useScrollCommand({
+    repeatCount,
     list: listRef.current,
     listOuterDiv: listOuterRef.current,
     scrollStep,
@@ -161,6 +165,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     pageCommandCallbacks,
     {jumpPage},
   ] = usePageCommand({
+    repeatCount,
     list: listRef.current, pageHeight, height,
     paddingSize, scrollOffset,
     numPages, isModalOpen, inputBox,
@@ -235,7 +240,8 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
 
   commandCallbacksRef.current = commandCallbacks;
   useKeybindings<AllCommandList>({
-    keybindings, commandCallbacks, commands: COMMANDS
+    keybindings, commandCallbacks, commands: COMMANDS,
+    onAfterCommand: resetRepeatCount,
   });
 
   const itemData: PageRendererDataType = {
@@ -326,6 +332,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
                   isColorInverted,
                   invertColorRate,
                   rotate,
+                  repeatCount,
                 }, null, '  ')
               }
             </code></pre>

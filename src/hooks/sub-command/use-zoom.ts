@@ -15,12 +15,14 @@ type UseZoomReturnType = [
 ];
 
 const useZoomCommand = ({
+  repeatCount,
   width,
   height,
   pageWidthRaw,
   pageHeightRaw,
   rotate,
 }: {
+  repeatCount: number;
   width: number;
   height: number;
   pageWidthRaw: number;
@@ -32,7 +34,7 @@ const useZoomCommand = ({
     down: zoomOut,
     default: zoomReset,
     set: zoomSet,
-  }] = useClipedValue(1, {min: 0.1, max: 4, step: 0.1});
+  }] = useClipedValue(1, {min: 0.1, max: 4, step: 0.1 * Math.max(1, repeatCount)});
 
   // const pageWidth = pageWidthRaw * scale;
   const pageHeight = ((rotate / 90) % 2 === 0) ? pageHeightRaw * scale : pageWidthRaw * scale;

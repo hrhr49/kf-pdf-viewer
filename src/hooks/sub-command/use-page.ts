@@ -18,14 +18,17 @@ type UsePageReturnType = [
 ];
 
 const usePageCommand = ({
+  repeatCount,
   list,
   pageHeight,
+  height,
   paddingSize,
   scrollOffset,
   numPages,
   isModalOpen,
   inputBox,
 }: {
+  repeatCount: number;
   list: List | null;
   pageHeight: number;
   height: number;
@@ -47,23 +50,29 @@ const usePageCommand = ({
     list?.scrollToItem(targetPageNumber - 1);
   }, [numPages, list]);
 
+  const scrollMax = numPages * (pageHeight + paddingSize) + paddingSize - height;
+
   const prevPage = useCallback(() => {
-    list?.scrollTo(scrollOffset - (pageHeight + paddingSize));
-  }, [scrollOffset, pageHeight, list, paddingSize]);
+    list?.scrollTo(Math.min(scrollMax, scrollOffset - Math.max(1, repeatCount) * (pageHeight + paddingSize)));
+  }, [repeatCount, scrollOffset, pageHeight, list, paddingSize, scrollMax]);
 
   const nextPage = useCallback(() => {
-    list?.scrollTo(scrollOffset + (pageHeight + paddingSize));
-  }, [scrollOffset, pageHeight, list, paddingSize]);
+    list?.scrollTo(Math.min(scrollMax, scrollOffset + Math.max(1, repeatCount) * (pageHeight + paddingSize)));
+  }, [repeatCount, scrollOffset, pageHeight, list, paddingSize, scrollMax]);
 
   const firstPage = useCallback(() => {
-    jumpPage(1);
-  }, [jumpPage]);
+    jumpPage(Math.max(1, repeatCount));
+  }, [repeatCount, jumpPage]);
 
   const lastPage = useCallback(() => {
-    jumpPage(-1);
-  }, [jumpPage]);
+    if (repeatCount >= 1) {
+      jumpPage(repeatCount);
+    } else {
+      jumpPage(-1);
+    }
+  }, [repeatCount, jumpPage]);
 
-  const goToPage = async () => {
+  const goToPage = useCallback(async () => {
     if (isModalOpen) return;
     const targetPageNumberStr = await inputBox.showInputBox({
       prompt: 'input page number to go',
@@ -81,7 +90,7 @@ const usePageCommand = ({
     } catch (e) {
       // do noting if input is invalid.
     }
-  };
+  }, [isModalOpen, inputBox, numPages, jumpPage]);
 
   return [
     0, // TODO

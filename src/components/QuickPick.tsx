@@ -1,6 +1,8 @@
-import {
+import React, {
   useState,
   useRef,
+  useMemo,
+  useCallback,
   createContext,
   ReactNode,
   CSSProperties,
@@ -101,7 +103,7 @@ interface QuickPickPresentationalProps<Content extends HasName> {
   parentSelector?: () => HTMLElement;
 }
 
-const QuickPickPresentational = <Item extends HasName>({
+const _QuickPickPresentational = <Item extends HasName>({
   title,
   placeHolder,
   isOpen,
@@ -150,6 +152,10 @@ const QuickPickPresentational = <Item extends HasName>({
     </div>
   );
 };
+
+// TODO
+const QuickPickPresentational = React.memo(_QuickPickPresentational) as any;
+// const QuickPickPresentational = (_QuickPickPresentational);
 
 interface QuickPickOptions {
   placeHolder?: string;
@@ -228,11 +234,11 @@ const createQuickPickContext = <Item extends HasName>({
       selectedIndex,
     } = useQuickPickLogic<Item>({items, textFilter});
 
-    const onTextChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+    const onTextChange: ChangeEventHandler<HTMLInputElement> = useCallback((event) => {
       chanegeInputText(event.target.value);
-    };
+    }, [chanegeInputText]);
 
-    const showQuickPick = (items: Item[], options?: QuickPickOptions): Promise<Item | null> => {
+    const showQuickPick = useCallback((items: Item[], options?: QuickPickOptions): Promise<Item | null> => {
       const {
         placeHolder = '',
         title = '',
@@ -246,24 +252,31 @@ const createQuickPickContext = <Item extends HasName>({
       deferredRef.current = deferred;
       open();
       return deferred.promise;
-    };
+    }, [open]);
 
-    const cancelQuickPick = () => {
+    const cancelQuickPick = useCallback(() => {
       close();
       deferredRef.current?.resolve(null);
-    };
+    }, [close]);
 
-    const selectItemQuickPick = () => {
+    const selectItemQuickPick = useCallback(() => {
+      console.log('selectItemQuickPick')
       const item = select();
       deferredRef.current?.resolve(item);
-    };
+    }, [select]);
 
-    const callbacks: QuickPickCallbacks = {
-      cancelQuickPick,
+    const callbacks: QuickPickCallbacks = useMemo(() => { 
+      console.log('updated callbacks');
+      return {
+        cancelQuickPick,
+        selectItemQuickPick,
+        nextItemQuickPick: nextItem,
+        previousItemQuickPick: previousItem,
+      }; 
+    }, [cancelQuickPick,
       selectItemQuickPick,
-      nextItemQuickPick: nextItem,
-      previousItemQuickPick: previousItem,
-    };
+      nextItem,
+    previousItem]);
 
     // keybindings
     useKeybindings({

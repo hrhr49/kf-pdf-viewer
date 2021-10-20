@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect} from 'react';
 
 const REPEAT_MAX = 999;
 const NO_REPEAT = -1;
@@ -36,9 +36,9 @@ const useRepeatCommand = () => {
     };
   }, []);
 
-  const resetRepeatCount = useCallback(() => {
+  const resetRepeatCount = () => {
     setRepeatCount(NO_REPEAT);
-  }, []);
+  };
 
   return [
     repeatCount,

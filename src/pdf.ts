@@ -37,7 +37,7 @@ const outlineNodeToPageNumber = async ({
   return pageIndex + 1;
 };
 
-const getPageText = async (page: PDFPageProxy) => {
+const getPageText = async (page: PDFPageProxy): Promise<string> => {
   const tokenizedText = await page.getTextContent();
   const pageText = tokenizedText.items
     .map(token => (token as any).str || '')
@@ -45,9 +45,17 @@ const getPageText = async (page: PDFPageProxy) => {
   return pageText;
 };
 
+const getPdfTexts = async (pdf: PDFDocumentProxy): Promise<string[]> => {
+  const promises = new Array(pdf.numPages)
+    .fill(null)
+    .map(async (_, idx) => getPageText(await pdf.getPage(idx + 1)));
+  return await Promise.all(promises);
+};
+
 export {
   outlineNodeToPageNumber,
   getPageText,
+  getPdfTexts,
 };
 
 export type {

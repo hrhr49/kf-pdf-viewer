@@ -1,18 +1,28 @@
-// import {throttle} from 'throttle-debounce';
-import {FC, useState, useContext, useRef, useCallback} from 'react';
+import {
+  FC,
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+} from 'react';
 import {
   Document,
 } from 'react-pdf';
 
+import {
+  getPdfTexts,
+  outlineNodeToPageNumber,
+} from '../pdf';
 import type {
   PDFDocumentProxy,
+  OutlineNode,
 } from '../pdf';
 
 import {FixedSizeList as List} from 'react-window';
 
-import { CommandPaletteContext, } from './CommandPaletteContext';
-import { OutlineSelectorContext, } from './OutlineSelectorContext';
-import { InputBoxContext, } from './InputBoxContext';
+import {CommandPaletteContext, } from './CommandPaletteContext';
+import {OutlineSelectorContext, } from './OutlineSelectorContext';
+import {InputBoxContext, } from './InputBoxContext';
 
 import {DropFileArea} from './DropFileArea';
 import {LandingPage} from './LandingPage';
@@ -21,12 +31,16 @@ import {SideBar} from './SideBar';
 import {PageRenderer} from './PageRenderer';
 import type {PageRendererDataType} from './PageRenderer';
 
-import { defaultKeybindings } from '../keybindings';
-import type { Keybindings } from '../keybindings';
+import {defaultKeybindings} from '../keybindings';
+import type {Keybindings} from '../keybindings';
 
 import {useKeybindings} from '../hooks/use-keybindings';
-import {useFlag} from '../hooks/use-flag';
 import {useRepeatCommand} from '../hooks/use-repeat-command';
+
+import {
+  startScroll,
+  stopScroll,
+} from '../scroll';
 
 import {
   CommandCallback,
@@ -39,16 +53,8 @@ import type {
   FullScreenCommand,
 } from '../commands';
 
-import { isDev } from '../env';
+import {isDev} from '../env';
 
-import {useColorCommand} from '../hooks/sub-command/use-color';
-import {useRotateCommand} from '../hooks/sub-command/use-rotate';
-import {useZoomCommand} from '../hooks/sub-command/use-zoom';
-import {useShowInfoCommand} from '../hooks/sub-command/use-show-info';
-import {usePageCommand} from '../hooks/sub-command/use-page';
-import {useScrollCommand} from '../hooks/sub-command/use-scroll';
-import {useSearchCommand} from '../hooks/sub-command/use-search';
-import {useOutlineCommand} from '../hooks/sub-command/use-outline';
 import {useIpcApi} from '../hooks/use-ipc-api';
 
 interface KFPDFViewerProps {
@@ -57,7 +63,11 @@ interface KFPDFViewerProps {
   width: number;
   paddingSize?: number;
   scrollStep?: number;
-  scrollHalPageStep?: number;
+  scrollHalfPageStep?: number;
+  scaleMax?: number;
+  scaleMin?: number;
+  scaleStep?: number;
+  invertColorRateStep?: number;
 };
 
 const KFPDFViewer: FC<KFPDFViewerProps> = ({
@@ -66,23 +76,51 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   width,
   paddingSize = 5,
   scrollStep = 25,
-  scrollHalPageStep = 60,
+  scrollHalfPageStep = 60,
+  scaleMax = 4,
+  scaleMin = 0.1,
+  scaleStep = 0.1,
+  invertColorRateStep = 0.05,
 }) => {
 
   // state
   const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null);
+  const [outline, setOutline] = useState<OutlineNode[] | null>(null);
+
   const [keybindings, setKeybindings] = useState<Keybindings>(defaultKeybindings);
   const [url, setUrl] = useState(isDev ? 'test.pdf' : '');
   const [numPages, setNumPages] = useState(0);
-  const [rotate, rotateCommandCallbacks] = useRotateCommand();
+  const [rotate, setRotate] = useState(0);
+  const [scale, setScale] = useState(1);
+
   const [pageWidthRaw, setPageWidthRaw] = useState(500);
   const [pageHeightRaw, setPageHeightRaw] = useState(1000);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isColorInverted, setIsColorInverted] = useState(false);
+  const [invertColorRate, setInvertColorRate] = useState(1);
+  const [showInfo, setShowInfo] = useState(isDev);
+
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [scrollOffset, setScrollOffset] = useState(0);
+
+  const [keyword, setKeyword] = useState('');
+  const [isKeywordHighlighted, setIsKeywordHighlighted] = useState(true);
+  const [pdfTexts, setPdfTexts] = useState<string[]>([]);
+  const [keywordHitPages, setKeywordHitPages] = useState<Set<number>>(new Set([]));
 
   // ref
   const listRef = useRef<List | null>(null);
   // NOTE: use outer element of <List> for scrolling.
   // call `Element.scrollBy` method for scrolling
   const listOuterRef = useRef<HTMLDivElement | null>(null);
+
+  const startListOuterScroll = (step: number) => {
+    if (listOuterRef.current) {
+      startScroll(listOuterRef.current, {top: step});
+      setIsScrolling(true);
+    }
+  };
+
   const docRef = useRef<any | null>(null);
   const commandCallbacksRef = useRef<CommandCallbacks | null>(null);
 
@@ -90,150 +128,196 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   const commandPalette = useContext(CommandPaletteContext);
   const outlineSelector = useContext(OutlineSelectorContext);
   const inputBox = useContext(InputBoxContext);
+  const isModalOpen = [commandPalette, outlineSelector, inputBox].every((mdl) => mdl.isOpen);
 
   // custom hooks
-  const [isSidebarOpen, {
-    toggle: sidebarToggle,
-  }] = useFlag(false);
 
   const [repeatCount, resetRepeatCount] = useRepeatCommand();
+  const repeatCount1 = Math.max(repeatCount, 1);
 
-  const [
-    {isColorInverted, invertColorRate},
-    colorCommandCallbacks,
-  ] = useColorCommand({repeatCount});
+  const pageHeight = ((rotate / 90) % 2 === 0) ? pageHeightRaw * scale : pageWidthRaw * scale;
+  const pageWidth = ((rotate / 90) % 2 === 0) ? pageWidthRaw * scale : pageHeightRaw * scale;
+  const itemSize = pageHeight + paddingSize;
 
-  const [
-    {scale, /* pageWidth, */ pageHeight},
-    zoomCommandCallbacks,
-  ] = useZoomCommand({repeatCount, width, height, pageWidthRaw, pageHeightRaw, rotate});
   useIpcApi({setUrl, setKeybindings});
-
-  const [
-    showInfo,
-    showInfoCommandCallbacks,
-  ] = useShowInfoCommand(isDev);
-
 
   const onDocumentLoadSuccess = (pdf: PDFDocumentProxy) => {
     setPdf(pdf);
     setNumPages(pdf.numPages);
-
     (async () => {
       // TODO: consider variable page size.
       const page = await pdf.getPage(1);
       const [x1, y1, x2, y2] = page.view;
-      const pageWidthRaw = x2 - x1;
-      const pageHeightRaw = y2 - y1;
-      setPageWidthRaw(pageWidthRaw);
-      setPageHeightRaw(pageHeightRaw);
+      setPageWidthRaw(x2 - x1);
+      setPageHeightRaw(y2 - y1);
+      setPdfTexts(await getPdfTexts(pdf));
     })();
   };
 
-  const isModalOpen = (
-    commandPalette.isOpen
-    || outlineSelector.isOpen
-    || inputBox.isOpen
-  );
+  const goToOutline = async ({
+    outline, recursive,
+  }: {outline: OutlineNode[] | null, recursive: boolean}) => {
+    if (!pdf || !outline || isModalOpen) return;
+    const result = await outlineSelector.showQuickPick(
+      outline.map((outlineNode) => ({
+        name: outlineNode.title,
+        content: outlineNode
+      }))
+    );
+    if (!result) return;
+    if (recursive && result.content.items?.length) {
+      goToOutline({outline: result.content.items, recursive: true});
+    } else {
+      const targetPageNumber = await outlineNodeToPageNumber({
+        pdf, outlineNode: result.content
+      });
+      jumpPage(targetPageNumber);
+    }
+  };
 
-  const onDropFile = useCallback((file: File) => {
-    const url = URL.createObjectURL(file);
-    setUrl(url);
-  }, []);
+  const search = async () => {
+    if (!pdf || isModalOpen || pdfTexts.length === 0) return;
+    const newKeyword = await inputBox.showInputBox({
+      prompt: 'input word to search'
+    });
+    if (newKeyword) {
+      const hittedPages = pdfTexts
+        .map((text, idx) => text.includes(keyword) ? idx + 1 : -1)
+        .filter((i) => i > 0);
 
-  const [
-    {
-      isScrolling,
-      scrollOffset,
-      currentPageNumber,
-    },
-    scrollCommandCallbacks,
-    {onScroll}
-  ] = useScrollCommand({
-    repeatCount,
-    list: listRef.current,
-    listOuterDiv: listOuterRef.current,
-    scrollStep,
-    scrollHalPageStep,
-    paddingSize,
-    pageHeight,
-    height,
-  });
+      if (hittedPages.length > 0) {
+        setKeyword(keyword);
+        setKeywordHitPages(new Set(hittedPages));
+      } else {
+        alert(`can not find keyword: ${keyword}`);
+      }
+    }
+  };
 
-  const [
-    _,
-    pageCommandCallbacks,
-    {jumpPage},
-  ] = usePageCommand({
-    repeatCount,
-    list: listRef.current, pageHeight, height,
-    paddingSize, scrollOffset,
-    numPages, isModalOpen, inputBox,
-  });
+  const searchNext = async (direction: 'forward' | 'backward') => {
+    const step = {forward: 1, backward: -1}[direction];
+    let tmpPageNumber = currentPageNumber + step;
+    while (
+      1 <= tmpPageNumber && tmpPageNumber <= numPages
+      && !keywordHitPages.has(tmpPageNumber)) {
+      tmpPageNumber += step;
+    }
+    if (tmpPageNumber < 1 || tmpPageNumber > numPages) {
+      alert('can not find next search result');
+    } else {
+      jumpPage(tmpPageNumber);
+    }
+  };
 
-  const [
-    {keyword, isKeywordHighlighted},
-    searchCommandCallbacks,
-  ] = useSearchCommand({
-    pdf,
-    isModalOpen,
-    inputBox,
-    currentPageNumber,
-    numPages,
-    jumpPage,
-  });
+  useEffect(() => {
+    const keyupHandler = () => {
+      stopScroll();
+      setIsScrolling(false);
+    };
+    document.addEventListener('keyup', keyupHandler);
+    return () => {
+      document.removeEventListener('keyup', keyupHandler);
+    };
+  }, [setIsScrolling]);
 
-  const [
-    _dummy,
-    outlineCommandCallbacks,
-    {onOutlineLoadSuccess},
-  ] = useOutlineCommand({
-    pdf,
-    isModalOpen,
-    jumpPage,
-    outlineSelector,
-  });
+  const currentPageNumber = Math.floor((scrollOffset + height / 2) / itemSize) + 1;
 
-  const doNothing = useCallback(() => {
-  }, []);
+  const jumpPage = (targetPageNumber: number) => {
+    if (!Number.isInteger(targetPageNumber)) return;
 
-  const notImplemented = useCallback(() => {
-    alert('sorry not implemented yet');
-  }, []);
+    if (targetPageNumber < 0) {
+      // -1 -> numPages
+      targetPageNumber += numPages + 1;
+    }
+    targetPageNumber = Math.max(1, Math.min(numPages, targetPageNumber));
+    listRef.current?.scrollToItem(targetPageNumber - 1);
+  };
+
+  // const [
+  //   _dummy,
+  //   outlineCommandCallbacks,
+  //   {onOutlineLoadSuccess},
+  // ] = useOutlineCommand({
+  //   pdf,
+  //   isModalOpen,
+  //   jumpPage,
+  //   outlineSelector,
+  // });
+
+  const scrollMax = numPages * itemSize + paddingSize - height;
+
+  const notImplemented = () => alert('sorry not implemented yet');
 
   const commandCallbacks: CommandCallbacks = {
-    doNothing,
+    doNothing: () => {},
 
     ...fullScreenCommandCallbacks,
-    ...showInfoCommandCallbacks,
-    ...pageCommandCallbacks,
-    ...zoomCommandCallbacks,
-    ...scrollCommandCallbacks,
-    ...rotateCommandCallbacks,
-    ...colorCommandCallbacks,
-    ...searchCommandCallbacks,
-    ...outlineCommandCallbacks,
 
-    sidebarToggle,
+    showInfoOn: () => setShowInfo(true),
+    showInfoOff: () => setShowInfo(false),
+    showInfoToggle: () => setShowInfo(!showInfo),
+
+    prevPage: () => listRef.current?.scrollTo(Math.max(0, scrollOffset - repeatCount1 * itemSize))
+    ,
+    nextPage: () => listRef.current?.scrollTo(Math.min(scrollMax, scrollOffset + repeatCount1 * itemSize)),
+    firstPage: () => jumpPage(repeatCount1),
+    lastPage: () => jumpPage(repeatCount >= 1 ? repeatCount : -1),
+    goToPage: async () => {
+      if (isModalOpen) return;
+      jumpPage(Number(await inputBox.showInputBox({
+        prompt: 'input page number to go',
+      })));
+    },
+
+    zoomReset: () => setScale(1),
+    zoomIn: () => setScale(Math.min(scale + repeatCount1 * scaleStep, scaleMax)),
+    zoomOut: () => setScale(Math.max(scale - repeatCount1 * scaleStep, scaleMin)),
+    zoomFitWidth: () => setScale(width / (pageWidth / scale)),
+    zoomFitHeight: () => setScale(height / (pageHeight / scale)),
+
+    scrollLeft: notImplemented,
+    scrollRight: notImplemented,
+    scrollUp: () => startListOuterScroll(-scrollStep),
+    scrollDown: () => startListOuterScroll(scrollStep),
+    scrollHalfPageUp: () => startListOuterScroll(-scrollHalfPageStep),
+    scrollHalfPageDown: () => startListOuterScroll(scrollHalfPageStep),
+    scrollTop: () => listRef.current?.scrollTo(paddingSize + itemSize * (currentPageNumber - 1)),
+    scrollBottom: () => listRef.current?.scrollTo(paddingSize - height + itemSize * currentPageNumber),
+
+    scrollReset: notImplemented,
+
+    rotateRight: () => setRotate((rotate + 90) % 360),
+    rotateLeft: () => setRotate((rotate + 360 - 90) % 360),
+
+    colorInvert: () => setIsColorInverted(!isColorInverted),
+    invertColorRateUp: () => setInvertColorRate(Math.min(invertColorRate + repeatCount1 * invertColorRateStep, 1)),
+    invertColorRateDown: () => setInvertColorRate(Math.max(invertColorRate - repeatCount1 * invertColorRateStep, 0)),
+
+    search,
+    searchNext: () => searchNext('forward'),
+    searchPrev: () => searchNext('backward'),
+    pickSearchList: notImplemented,
+    highlightToggle: () => setIsKeywordHighlighted(!isKeywordHighlighted),
+
+    goToOutline: () => goToOutline({outline, recursive: false}),
+    goToOutlineRecursive: () => goToOutline({outline, recursive: true}),
+
+    sidebarToggle: () => setIsSidebarOpen(!isSidebarOpen),
 
     forwardPageHistory: notImplemented,
     backwardPageHistory: notImplemented,
 
     commandPaletteOpen: async () => {
-      if (inputBox.isOpen || commandPalette.isOpen) {
-        return;
-      }
-      const items = COMMANDS.map((command) => {
-        return {
-          name: commandToTitle(command),
-          command,
-          keys: keybindings[command],
-        };
-      });
+      if (isModalOpen) return;
+      const items = COMMANDS.map((command) => ({
+        name: commandToTitle(command),
+        command,
+        keys: keybindings[command],
+      }));
+
       const item = await commandPalette.showQuickPick(items);
-      if (item !== null && item.command) {
-        const command = item.command;
-        commandCallbacksRef.current?.[command]?.();
+      if (item?.command) {
+        commandCallbacksRef.current?.[item.command]?.();
       }
     },
   };
@@ -256,7 +340,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   if (!url) {
     return (
       <DropFileArea
-        onDropFile={onDropFile}
+        onDropFile={(file: File) => setUrl(URL.createObjectURL(file))}
       >
         <LandingPage
           keybindings={keybindings}
@@ -266,7 +350,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   }
   return (
     <DropFileArea
-      onDropFile={onDropFile}
+      onDropFile={(file: File) => setUrl(URL.createObjectURL(file))}
     >
       <div
         style={{
@@ -286,18 +370,18 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
           onItemClick={({pageNumber}) => {jumpPage(Number(pageNumber))}}
         >
           <SideBar
-              onItemClick={({pageNumber}) => {jumpPage(Number(pageNumber))}}
-              onLoadSuccess={onOutlineLoadSuccess}
-              isOpen={isSidebarOpen}
+            onItemClick={({pageNumber}) => {jumpPage(Number(pageNumber))}}
+            onLoadSuccess={(outline: OutlineNode[]) => {setOutline(outline)}}
+            isOpen={isSidebarOpen}
           />
           <List
             height={height}
             itemCount={numPages}
-            itemSize={pageHeight + paddingSize}
+            itemSize={itemSize}
             width={width}
             overscanCount={2}
             itemData={itemData}
-            onScroll={onScroll}
+            onScroll={({scrollOffset}) => setScrollOffset(scrollOffset)}
             ref={listRef}
             outerRef={listOuterRef}
           >

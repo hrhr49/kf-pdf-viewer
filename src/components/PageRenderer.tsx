@@ -1,5 +1,7 @@
-import {CSSProperties} from 'react';
+import {CSSProperties, memo, useCallback} from 'react';
 import {Page} from 'react-pdf';
+
+const MemorizedPage = memo(Page);
 
 interface PageRendererDataType {
   scale: number;
@@ -51,36 +53,31 @@ const PageRenderer = ({index, style, data}: any) => {
     isScrolling,
   } = data;
 
-  // const makeTextRenderer = (searchText: string) => (textItem: any) => highlightPattern(textItem.str, searchText);
-
-  const textRenderer = ({str}:any) => {
+  const textRenderer = useCallback(({str}: any) => {
     return <>{highlightPattern(str, keyword)}</>;
-  }
+  }, [keyword]);
 
-  // NOTE: textLayer rendering is very heavy while scrolling.
-  // so disable renderTextLayer while scrolling.
   return (
     <div style={{
       ...style,
       top: `${parseFloat(style.top) + paddingSize}px`,
     }}
-    >
-      <Page
-        pageNumber={index + 1}
-        scale={scale}
-        rotate={rotate}
-        customTextRenderer={isKeywordHighlighted ? textRenderer : undefined}
-        onLoadError={(error) => console.error('Error while loading page! ' + error.message)}
-        onRenderError={(error) => console.error('Error while loading page! ' + error.message)}
-        onGetTextError={(error) => console.error('Error while loading text layer items! ' + error.message)}
-        renderTextLayer={!isScrolling}
-        renderAnnotationLayer={false}
-        renderInteractiveForms={false}
-      />
-    </div>
+  >
+    <MemorizedPage
+      pageNumber={index + 1}
+      scale={scale}
+      rotate={rotate}
+      customTextRenderer={isKeywordHighlighted ? textRenderer : undefined}
+      onLoadError={useCallback((error) => console.error('Error while loading page! ' + error.message), [])}
+      onRenderError={useCallback((error) => console.error('Error while loading page! ' + error.message), [])}
+      onGetTextError={useCallback((error) => console.error('Error while loading text layer items! ' + error.message), [])}
+      renderTextLayer={!isScrolling}
+      renderAnnotationLayer={false}
+      renderInteractiveForms={false}
+    />
+  </div>
   );
 };
-
 
 export {
   PageRenderer,

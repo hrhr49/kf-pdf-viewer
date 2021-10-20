@@ -1,15 +1,14 @@
-import React, {CSSProperties} from 'react';
+import {CSSProperties, memo} from 'react';
 
 import {
-  // pdfjs,
-  // Document,
-  // Page,
   Outline,
 } from 'react-pdf';
 
 import {
   OutlineNode,
 } from '../pdf';
+
+const MemorizedOutline = memo(Outline);
 
 interface SideBarProps {
   onItemClick: ({pageNumber}: {pageNumber: string}) => void;
@@ -34,7 +33,7 @@ const SideBar = ({
         display: isOpen ? 'block' : 'none',
       }}
     >
-      <Outline
+      <MemorizedOutline
         onItemClick={onItemClick}
         onLoadSuccess={onLoadSuccess}
       />

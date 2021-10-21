@@ -114,9 +114,9 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   // call `Element.scrollBy` method for scrolling
   const listOuterRef = useRef<HTMLDivElement | null>(null);
 
-  const startListOuterScroll = (step: number) => {
+  const startListOuterScroll = (offset: {top: number} | {left: number}) => {
     if (listOuterRef.current) {
-      startScroll(listOuterRef.current, {top: step});
+      startScroll(listOuterRef.current, offset);
       setIsScrolling(true);
     }
   };
@@ -275,12 +275,12 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     zoomFitWidth: () => setScale(width / (pageWidth / scale)),
     zoomFitHeight: () => setScale(height / (pageHeight / scale)),
 
-    scrollLeft: notImplemented,
-    scrollRight: notImplemented,
-    scrollUp: () => startListOuterScroll(-scrollStep),
-    scrollDown: () => startListOuterScroll(scrollStep),
-    scrollHalfPageUp: () => startListOuterScroll(-scrollHalfPageStep),
-    scrollHalfPageDown: () => startListOuterScroll(scrollHalfPageStep),
+    scrollLeft: () => startListOuterScroll({left: -scrollStep}),
+    scrollRight: () => startListOuterScroll({left: scrollStep}),
+    scrollUp: () => startListOuterScroll({top: -scrollStep}),
+    scrollDown: () => startListOuterScroll({top: scrollStep}),
+    scrollHalfPageUp: () => startListOuterScroll({top: -scrollHalfPageStep}),
+    scrollHalfPageDown: () => startListOuterScroll({top: scrollHalfPageStep}),
     scrollTop: () => listRef.current?.scrollTo(paddingSize + itemSize * (currentPageNumber - 1)),
     scrollBottom: () => listRef.current?.scrollTo(paddingSize - height + itemSize * currentPageNumber),
 
@@ -335,6 +335,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     keyword,
     paddingSize,
     isScrolling,
+    pageWidth,
   };
 
   if (!url) {

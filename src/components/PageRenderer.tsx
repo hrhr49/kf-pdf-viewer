@@ -10,6 +10,7 @@ interface PageRendererDataType {
   keyword: string;
   paddingSize: number;
   isScrolling: boolean;
+  pageWidth: number;
 }
 
 interface PageRendererProps {
@@ -51,31 +52,40 @@ const PageRenderer = ({index, style, data}: any) => {
     keyword,
     paddingSize,
     isScrolling,
+    pageWidth,
   } = data;
 
   const textRenderer = useCallback(({str}: any) => {
     return <>{highlightPattern(str, keyword)}</>;
   }, [keyword]);
 
+  console.log(style);
   return (
     <div style={{
       ...style,
       top: `${parseFloat(style.top) + paddingSize}px`,
     }}
-  >
-    <MemorizedPage
-      pageNumber={index + 1}
-      scale={scale}
-      rotate={rotate}
-      customTextRenderer={isKeywordHighlighted ? textRenderer : undefined}
-      onLoadError={useCallback((error) => console.error('Error while loading page! ' + error.message), [])}
-      onRenderError={useCallback((error) => console.error('Error while loading page! ' + error.message), [])}
-      onGetTextError={useCallback((error) => console.error('Error while loading text layer items! ' + error.message), [])}
-      renderTextLayer={!isScrolling}
-      renderAnnotationLayer={false}
-      renderInteractiveForms={false}
-    />
-  </div>
+    >
+      <div
+        style={{
+          width: `${pageWidth}px`,
+          margin: 'auto',
+        }}
+      >
+        <MemorizedPage
+          pageNumber={index + 1}
+          scale={scale}
+          rotate={rotate}
+          customTextRenderer={isKeywordHighlighted ? textRenderer : undefined}
+          onLoadError={useCallback((error) => console.error('Error while loading page! ' + error.message), [])}
+          onRenderError={useCallback((error) => console.error('Error while loading page! ' + error.message), [])}
+          onGetTextError={useCallback((error) => console.error('Error while loading text layer items! ' + error.message), [])}
+          renderTextLayer={!isScrolling}
+          renderAnnotationLayer={false}
+          renderInteractiveForms={false}
+        />
+      </div>
+    </div>
   );
 };
 

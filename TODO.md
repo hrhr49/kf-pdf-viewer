@@ -1,5 +1,5 @@
 * fix
-    - `zoomIn` is not working when page width is larger than screen width.
+    - can not scroll horizontally and vertically at same time.
     - `fullScreenToggle` is not working sometimes.
     - support PDF with variable page size
     - keyword highlight position is shifted unexpectedly

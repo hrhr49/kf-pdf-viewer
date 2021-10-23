@@ -60,8 +60,10 @@ const LandingPage: FC<LandingPageProps> = ({
     <h3>Keybindings</h3>
     <table style={tableStyle} >
       <thead style={theadStyle} >
-        <th style={thStyle} >command</th>
-        <th style={thStyle} >keybord shortcuts</th>
+        <tr>
+          <th style={thStyle} >command</th>
+          <th style={thStyle} >keybord shortcuts</th>
+        </tr>
       </thead>
       <tbody>
         {

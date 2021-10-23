@@ -15,7 +15,6 @@
     "@types/react": "^16.9.53",
     "@types/react-dom": "^16.9.8",
     "jsonschema": "^1.4.0",
-    "mime-types": "^2.1.33",
     "mousetrap": "^1.6.5",
     "normalize.css": "^8.0.1",
     "react": "^17.0.2",
@@ -26,7 +25,6 @@
     "react-pdf": "^5.4.0",
     "react-scripts": "4.0.3",
     "react-window": "^1.8.6",
-    "src-common": "link:./src-common",
     "throttle-debounce": "^3.0.1",
     "typescript": "^4.0.3",
     "web-vitals": "^0.2.4",
@@ -72,7 +70,6 @@
     ]
   },
   "devDependencies": {
-    "@types/mime-types": "^2.1.1",
     "@types/mousetrap": "^1.6.8",
     "@types/react-modal": "^3.13.1",
     "@types/react-pdf": "^5.0.7",

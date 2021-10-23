@@ -54,7 +54,13 @@ const LandingPage: FC<LandingPageProps> = ({
     <h3>How to Use</h3>
     <ul>
       <li>command palette: <Keyboard keys={keybindings.commandPaletteOpen} /></li>
-      <li>load File: drag and drop PDF file here.</li>
+      <li>open file:
+        <ul>
+          <li>drag and drop PDF file here.</li>
+          <li>keyboard shortcuts: <Keyboard keys={keybindings.fileOpen} /></li>
+          <li>choose 'File Open' command in command palette</li>
+        </ul>
+      </li>
     </ul>
 
     <h3>Keybindings</h3>

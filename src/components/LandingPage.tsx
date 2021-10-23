@@ -54,7 +54,7 @@ const LandingPage: FC<LandingPageProps> = ({
     <h3>How to Use</h3>
     <ul>
       <li>command palette: <Keyboard keys={keybindings.commandPaletteOpen} /></li>
-      <li>load File: drag and drop media file here (supported file depends your browser)</li>
+      <li>load File: drag and drop PDF file here.</li>
     </ul>
 
     <h3>Keybindings</h3>

@@ -7,6 +7,7 @@
     - when window is closed, process remains and can not open new PDF file.
     - when window is opened already, can not open new PDF file.
     - position of scroll bar is sometimes not at the edge of page, shifted a little unexpectedly.
+    - add Electron support.
 
 * add
     - thumbnail

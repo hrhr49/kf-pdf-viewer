@@ -55,8 +55,6 @@ import type {
 
 import {isDev} from '../env';
 
-import {useIpcApi} from '../hooks/use-ipc-api';
-
 interface KFPDFViewerProps {
   fullScreenCommandCallbacks: Record<FullScreenCommand, CommandCallback>;
   height: number;
@@ -138,8 +136,6 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   const pageHeight = ((rotate / 90) % 2 === 0) ? pageHeightRaw * scale : pageWidthRaw * scale;
   const pageWidth = ((rotate / 90) % 2 === 0) ? pageWidthRaw * scale : pageHeightRaw * scale;
   const itemSize = pageHeight + paddingSize;
-
-  useIpcApi({setUrl, setKeybindings});
 
   const onDocumentLoadSuccess = (pdf: PDFDocumentProxy) => {
     setPdf(pdf);

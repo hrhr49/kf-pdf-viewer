@@ -13,7 +13,7 @@ if (argv.length === 0) {
 }
 
 const getInputFile = () => inputFile;
-const setInputFile = (filePath: string) => {
+const setInputFile = (filePath: string | null) => {
   inputFile = filePath;
 };
 

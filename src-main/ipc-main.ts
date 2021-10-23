@@ -5,7 +5,7 @@ import os from 'os';
 import mime from 'mime-types';
 import {ipcMain} from 'electron';
 
-import {getInputFile} from './env';
+import {getInputFile, setInputFile} from './env';
 
 import {
   IPC_CHANNELS,
@@ -30,6 +30,7 @@ const isErrnoException = (obj: any): obj is NodeJS.ErrnoException => {
 const ipcMainApi: IpcApi = {
   inputFileData: async () => {
     const inputFile = getInputFile();
+    setInputFile(null);
     if (!inputFile) {
       return ipcResultOk(null);
     }

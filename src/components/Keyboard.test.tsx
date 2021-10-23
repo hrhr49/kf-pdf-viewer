@@ -1,10 +1,10 @@
-import React from 'react';
+// import React from 'react';
 import { render, screen } from '@testing-library/react';
 import {Keyboard} from './Keyboard';
 
-import {
-  defaultKeybindings,
-} from '../keybindings';
+// import {
+//   defaultKeybindings,
+// } from '../keybindings';
 
 it('renders without crashing when no keys', () => {
   render(

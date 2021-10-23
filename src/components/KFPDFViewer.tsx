@@ -85,7 +85,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null);
   const [outline, setOutline] = useState<OutlineNode[] | null>(null);
 
-  const [keybindings, setKeybindings] = useState<Keybindings>(defaultKeybindings);
+  const [keybindings] = useState<Keybindings>(defaultKeybindings);
   const [url, setUrl] = useState(isDev ? 'test.pdf' : '');
   const [numPages, setNumPages] = useState(0);
   const [rotate, setRotate] = useState(0);

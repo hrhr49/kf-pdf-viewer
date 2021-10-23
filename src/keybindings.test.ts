@@ -1,12 +1,12 @@
 import {
-  defaultKeybindings,
+  // defaultKeybindings,
   isPartialKeybindings,
 } from './keybindings';
 
-import type {
-  Keys,
-  Keybindings,
-} from './keybindings';
+// import type {
+//   Keys,
+//   Keybindings,
+// } from './keybindings';
 
 
 test('jsonschema test', () => {

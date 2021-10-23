@@ -1,7 +1,7 @@
-import React from 'react';
+// import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {CommandPaletteContext, CommandPaletteProvider} from './CommandPaletteContext';
+import {CommandPaletteProvider} from './CommandPaletteContext';
 
 // TODO: add more tests.
 

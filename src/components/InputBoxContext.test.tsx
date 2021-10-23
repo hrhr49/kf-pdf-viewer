@@ -1,7 +1,7 @@
-import React from 'react';
+// import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {InputBoxContext, InputBoxProvider} from './InputBoxContext';
+import {InputBoxProvider} from './InputBoxContext';
 
 // TODO: add more tests.
 

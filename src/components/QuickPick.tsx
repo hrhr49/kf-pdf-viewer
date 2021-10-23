@@ -8,6 +8,7 @@ import React, {
   CSSProperties,
   ChangeEventHandler,
   MouseEventHandler,
+  useEffect,
 } from 'react';
 import ReactModal from 'react-modal';
 
@@ -115,6 +116,14 @@ const _QuickPickPresentational = <Item extends HasName>({
   renderItem,
   parentSelector,
 }: QuickPickPresentationalProps<Item>) => {
+  const selectedListItemRef = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    selectedListItemRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+    });
+  });
+
   return (
     <div onMouseDown={onMouseDownOutside} >
       <ReactModal
@@ -142,6 +151,7 @@ const _QuickPickPresentational = <Item extends HasName>({
                 <li
                   key={`${item.name}`}
                   style={listItemStyle}
+                  ref={idx === selectedIndex ? selectedListItemRef : undefined}
                 >
                   {renderItem(item, idx === selectedIndex)}
                 </li>

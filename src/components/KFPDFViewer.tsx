@@ -9,6 +9,8 @@ import {
   Document,
 } from 'react-pdf';
 
+import type {DropzoneRef} from 'react-dropzone';
+
 import {
   getPdfTexts,
   outlineNodeToPageNumber,
@@ -121,6 +123,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
 
   const docRef = useRef<any | null>(null);
   const commandCallbacksRef = useRef<CommandCallbacks | null>(null);
+  const dropzoneRef = useRef<DropzoneRef | null>(null);
 
   // context
   const commandPalette = useContext(CommandPaletteContext);
@@ -316,6 +319,8 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
         commandCallbacksRef.current?.[item.command]?.();
       }
     },
+
+    fileOpen: () => dropzoneRef?.current?.open(),
   };
 
   commandCallbacksRef.current = commandCallbacks;
@@ -338,6 +343,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     return (
       <DropFileArea
         onDropFile={(file: File) => setUrl(URL.createObjectURL(file))}
+        dropzoneRef={dropzoneRef}
       >
         <LandingPage
           keybindings={keybindings}
@@ -348,6 +354,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   return (
     <DropFileArea
       onDropFile={(file: File) => setUrl(URL.createObjectURL(file))}
+      dropzoneRef={dropzoneRef}
     >
       <div
         style={{

@@ -85,6 +85,7 @@ const COMMANDS = [
   ...HISTORY_COMMANDS,
 
   'commandPaletteOpen',
+  'fileOpen',
 ] as const;
 
 type AllCommandList = typeof COMMANDS;

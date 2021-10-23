@@ -148,6 +148,7 @@ const defaultKeybindings: Keybindings = {
   backwardPageHistory: 'H',
 
   commandPaletteOpen: [':', 'command+shift+p', 'ctrl+shift+p'],
+  fileOpen: ['command+o', 'ctrl+o'],
 };
 
 export {

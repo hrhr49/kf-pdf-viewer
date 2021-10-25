@@ -32,6 +32,7 @@ interface CommandPaletteItem {
 }
 
 const itemStyle: CSSProperties = {
+  display: 'flex',
   backgroundColor: 'white',
   width: '100%',
   height: '100%',
@@ -54,7 +55,9 @@ const renderItem = (
       style={isSelected ? itemStyleSelected : itemStyle}
     >
       <MatchedText text={name} matchedIndexes={matchedIndexes} />
-      <Keyboard keys={content.keys} />
+      <div style={{marginLeft: 'auto'}}>
+        <Keyboard keys={content.keys} />
+      </div>
     </div>
   );
 };

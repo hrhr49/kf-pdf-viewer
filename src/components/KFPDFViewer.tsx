@@ -279,12 +279,12 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     zoomFitWidth: () => setScaleAndScroll(width / (pageWidth / scale)),
     zoomFitHeight: () => setScaleAndScroll(height / (pageHeight / scale)),
 
-    scrollLeft: () => startListOuterScroll({left: -scrollStep}),
-    scrollRight: () => startListOuterScroll({left: scrollStep}),
-    scrollUp: () => startListOuterScroll({top: -scrollStep}),
-    scrollDown: () => startListOuterScroll({top: scrollStep}),
-    scrollHalfPageUp: () => startListOuterScroll({top: -scrollHalfPageStep}),
-    scrollHalfPageDown: () => startListOuterScroll({top: scrollHalfPageStep}),
+    scrollLeft: () => startListOuterScroll({left: repeatCount1 * -scrollStep}),
+    scrollRight: () => startListOuterScroll({left: repeatCount1 * scrollStep}),
+    scrollUp: () => startListOuterScroll({top: repeatCount1 * -scrollStep}),
+    scrollDown: () => startListOuterScroll({top: repeatCount1 * scrollStep}),
+    scrollHalfPageUp: () => startListOuterScroll({top: repeatCount1 * -scrollHalfPageStep}),
+    scrollHalfPageDown: () => startListOuterScroll({top: repeatCount1 * scrollHalfPageStep}),
     scrollTop: () => listRef.current?.scrollTo(paddingSize + itemSize * (currentPageNumber - 1)),
     scrollBottom: () => listRef.current?.scrollTo(paddingSize - height + itemSize * currentPageNumber),
 

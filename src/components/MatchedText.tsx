@@ -10,7 +10,7 @@ const MatchedText: FC<{text: string; matchedIndexes: number[]}> = memo(({
 }) => {
   const matchedIndexSet = new Set(matchedIndexes);
   return (
-    <>
+    <div>
       {
         text
         .split('')
@@ -30,7 +30,7 @@ const MatchedText: FC<{text: string; matchedIndexes: number[]}> = memo(({
           )
         })
       }
-    </>
+    </div>
   );
 });
 

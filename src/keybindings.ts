@@ -115,10 +115,10 @@ const defaultKeybindings: Keybindings = {
   zoomFitWidth: 'w',
   zoomFitHeight: 'e',
 
-  scrollLeft: 'h',
-  scrollRight: 'l',
-  scrollUp: 'k',
-  scrollDown: 'j',
+  scrollLeft: ['h', 'left'],
+  scrollRight: ['l', 'right'],
+  scrollUp: ['k', 'up'],
+  scrollDown: ['j', 'down'],
   scrollHalfPageDown: 'd',
   scrollHalfPageUp: 'u',
 

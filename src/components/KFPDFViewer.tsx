@@ -129,7 +129,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   const commandPalette = useContext(CommandPaletteContext);
   const outlineSelector = useContext(OutlineSelectorContext);
   const inputBox = useContext(InputBoxContext);
-  const isModalOpen = [commandPalette, outlineSelector, inputBox].every((mdl) => mdl.isOpen);
+  const isModalOpen = [commandPalette, outlineSelector, inputBox].some((mdl) => mdl.isOpen);
 
   // custom hooks
 
@@ -327,6 +327,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   useKeybindings<AllCommandList>({
     keybindings, commandCallbacks, commands: COMMANDS,
     onAfterCommand: resetRepeatCount,
+    enabled: !isModalOpen,
   });
 
   const itemData: PageRendererDataType = {
@@ -421,6 +422,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
                   invertColorRate,
                   rotate,
                   repeatCount,
+                  isModalOpen,
                 }, null, '  ')
               }
             </code></pre>

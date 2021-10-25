@@ -270,13 +270,13 @@ const createQuickPickContext = <Item extends HasName>({
     }, [close]);
 
     const selectItemQuickPick = useCallback(() => {
-      console.log('selectItemQuickPick')
+      // console.log('selectItemQuickPick')
       const item = select();
       deferredRef.current?.resolve(item);
     }, [select]);
 
     const callbacks: QuickPickCallbacks = useMemo(() => { 
-      console.log('updated callbacks');
+      // console.log('updated callbacks');
       return {
         cancelQuickPick,
         selectItemQuickPick,

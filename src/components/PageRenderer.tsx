@@ -59,7 +59,7 @@ const PageRenderer = ({index, style, data}: any) => {
     return <>{highlightPattern(str, keyword)}</>;
   }, [keyword]);
 
-  console.log(style);
+  // console.log(style);
   return (
     <div style={{
       ...style,

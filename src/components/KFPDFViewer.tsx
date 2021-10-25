@@ -243,6 +243,11 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   //   outlineSelector,
   // });
 
+  const setScaleAndScroll = (newScale: number) => {
+    listRef.current?.scrollTo(scrollOffset * newScale / scale);
+    setScale(newScale);
+  };
+
   const scrollMax = numPages * itemSize + paddingSize - height;
 
   const notImplemented = () => alert('sorry not implemented yet');
@@ -268,11 +273,11 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
       })));
     },
 
-    zoomReset: () => setScale(1),
-    zoomIn: () => setScale(Math.min(scale + repeatCount1 * scaleStep, scaleMax)),
-    zoomOut: () => setScale(Math.max(scale - repeatCount1 * scaleStep, scaleMin)),
-    zoomFitWidth: () => setScale(width / (pageWidth / scale)),
-    zoomFitHeight: () => setScale(height / (pageHeight / scale)),
+    zoomReset: () => setScaleAndScroll(1),
+    zoomIn: () => setScaleAndScroll(Math.min(scale + repeatCount1 * scaleStep, scaleMax)),
+    zoomOut: () => setScaleAndScroll(Math.max(scale - repeatCount1 * scaleStep, scaleMin)),
+    zoomFitWidth: () => setScaleAndScroll(width / (pageWidth / scale)),
+    zoomFitHeight: () => setScaleAndScroll(height / (pageHeight / scale)),
 
     scrollLeft: () => startListOuterScroll({left: -scrollStep}),
     scrollRight: () => startListOuterScroll({left: scrollStep}),

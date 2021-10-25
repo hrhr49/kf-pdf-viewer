@@ -39,6 +39,8 @@ import type {
 
 const modalStyles = {
   content: {
+    display: 'flex',
+    flexDirection: 'column',
     top: '50%',
     left: '50%',
     right: 'auto',
@@ -73,6 +75,7 @@ const inputStyle: CSSProperties = {
 
 const listStyle: CSSProperties = {
   width: '100%',
+  overflow: 'hidden',
   listStyleType: 'none',
   margin: 0,
   padding: 0,

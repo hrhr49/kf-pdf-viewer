@@ -1,7 +1,6 @@
 import React, {
   useState,
   useRef,
-  useMemo,
   useCallback,
   createContext,
   ReactNode,
@@ -278,18 +277,12 @@ const createQuickPickContext = <Item extends HasName>({
       deferredRef.current?.resolve(item);
     }, [select]);
 
-    const callbacks: QuickPickCallbacks = useMemo(() => { 
-      // console.log('updated callbacks');
-      return {
-        cancelQuickPick,
-        selectItemQuickPick,
-        nextItemQuickPick: nextItem,
-        previousItemQuickPick: previousItem,
-      }; 
-    }, [cancelQuickPick,
+    const callbacks: QuickPickCallbacks = { 
+      cancelQuickPick,
       selectItemQuickPick,
-      nextItem,
-    previousItem]);
+      nextItemQuickPick: nextItem,
+      previousItemQuickPick: previousItem,
+    };
 
     // keybindings
     useKeybindings({

@@ -1,9 +1,10 @@
 import {
   FC,
   CSSProperties,
+  memo,
 } from 'react';
 
-const MatchedText: FC<{text: string; matchedIndexes: number[]}> = ({
+const MatchedText: FC<{text: string; matchedIndexes: number[]}> = memo(({
   text,
   matchedIndexes,
 }) => {
@@ -31,7 +32,7 @@ const MatchedText: FC<{text: string; matchedIndexes: number[]}> = ({
       }
     </>
   );
-};
+});
 
 export {
   MatchedText,

@@ -194,10 +194,10 @@ type QuickPickAllCommandList = typeof QUICK_PICK_COMMANDS;
 type QuickPickCommand = QuickPickAllCommandList[number];
 
 const quickPickKeybindings: Record<QuickPickCommand, Keys> = {
-  cancelQuickPick: 'esc',
-  selectItemQuickPick: 'enter',
-  nextItemQuickPick: 'down',
-  previousItemQuickPick: 'up',
+  cancelQuickPick: ['esc', 'ctrl+['],
+  selectItemQuickPick: ['enter', 'ctrl+m'],
+  nextItemQuickPick: ['down', 'ctrl+j', 'ctrl+n', 'tab'],
+  previousItemQuickPick: ['up', 'ctrl+k', 'ctrl+p', 'shift+tab'],
 };
 
 type QuickPickCallbacks = Record<QuickPickCommand, () => unknown>;

@@ -125,8 +125,8 @@ type InputBoxAllCommandList = typeof INPUT_BOX_COMMANDS;
 type InputBoxCommand = InputBoxAllCommandList[number];
 
 const inputBoxKeybindings: Record<InputBoxCommand, Keys> = {
-  cancelInputBox: 'esc',
-  confirmInputBox: 'enter',
+  cancelInputBox: ['esc', 'ctrl+['],
+  confirmInputBox: ['enter', 'ctrl+m'],
 };
 
 const createInputBoxContext = () => {

@@ -4,6 +4,8 @@
 
 this is a PDF viewer with keyboard shortcuts and command palette.
 
+![./img/kf-pdf-viewer-demo.gif](./img/kf-pdf-viewer-demo.gif)
+
 ## Demo
 
 https://hrhr49.github.io/kf-pdf-viewer/

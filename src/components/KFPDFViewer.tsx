@@ -299,8 +299,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
     scrollHalfPageDown: () => startListOuterScroll({top: repeatCount1 * scrollHalfPageStep}),
     scrollTop: () => listRef.current?.scrollTo(paddingSize + itemSize * (currentPageNumber - 1)),
     scrollBottom: () => listRef.current?.scrollTo(paddingSize - height + itemSize * currentPageNumber),
-
-    scrollReset: notImplemented,
+    scrollCenter: () => listRef.current?.scrollTo(paddingSize + itemSize * (currentPageNumber - 1) - height / 2 + pageHeight / 2),
 
     rotateRight: () => setRotate((rotate + 90) % 360),
     rotateLeft: () => setRotate((rotate + 360 - 90) % 360),

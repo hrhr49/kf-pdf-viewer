@@ -124,7 +124,7 @@ const defaultKeybindings: Keybindings = {
 
   scrollTop: ['home', 'z t'],
   scrollBottom: ['end', 'z b'],
-  scrollReset: 'M',
+  scrollCenter: ['z z', 'z .'],
 
   rotateRight: '>',
   rotateLeft: '<',

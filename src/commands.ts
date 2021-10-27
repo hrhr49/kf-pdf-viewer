@@ -35,7 +35,7 @@ const SCROLL_COMMANDS = [
   'scrollHalfPageUp',
   'scrollTop',
   'scrollBottom',
-  'scrollReset',
+  'scrollCenter',
 ] as const;
 
 const ROTATE_COMMANDS = [

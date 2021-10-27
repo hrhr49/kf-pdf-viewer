@@ -68,6 +68,7 @@ interface KFPDFViewerProps {
   scaleMin?: number;
   scaleStep?: number;
   invertColorRateStep?: number;
+  histroyMaxSize?: number;
 };
 
 const KFPDFViewer: FC<KFPDFViewerProps> = ({
@@ -81,6 +82,7 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   scaleMin = 0.1,
   scaleStep = 0.1,
   invertColorRateStep = 0.05,
+  histroyMaxSize = 999,
 }) => {
 
   // state
@@ -107,6 +109,14 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   const [isKeywordHighlighted, setIsKeywordHighlighted] = useState(true);
   const [pdfTexts, setPdfTexts] = useState<string[]>([]);
   const [keywordHitPages, setKeywordHitPages] = useState<Set<number>>(new Set([]));
+
+  const [pageHistory, setPageHistory] = useState<number[]>([]);
+  const [pageHistoryIndex, setPageHistoryIndex] = useState<number>(-1);
+
+  const pushPageHistory = (pageNumber: number) => {
+    setPageHistory([...pageHistory.slice(0, pageHistoryIndex + 1), pageNumber].slice(-histroyMaxSize));
+    setPageHistoryIndex(pageHistoryIndex + 1);
+  };
 
   // ref
   const listRef = useRef<List | null>(null);
@@ -143,6 +153,10 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
   const onDocumentLoadSuccess = (pdf: PDFDocumentProxy) => {
     setPdf(pdf);
     setNumPages(pdf.numPages);
+
+    setPageHistory([1]);
+    setPageHistoryIndex(0);
+
     (async () => {
       // TODO: consider variable page size.
       const page = await pdf.getPage(1);
@@ -221,7 +235,12 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
 
   const currentPageNumber = Math.floor((scrollOffset + height / 2) / itemSize) + 1;
 
-  const jumpPage = (targetPageNumber: number) => {
+  const jumpPage = (targetPageNumber: number, options?: {
+    isPushHistory?: boolean
+  }) => {
+    const {
+      isPushHistory = true,
+    } = options ?? {};
     if (!Number.isInteger(targetPageNumber)) return;
 
     if (targetPageNumber < 0) {
@@ -229,19 +248,12 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
       targetPageNumber += numPages + 1;
     }
     targetPageNumber = Math.max(1, Math.min(numPages, targetPageNumber));
+
+    if (isPushHistory) {
+      pushPageHistory(targetPageNumber);
+    }
     listRef.current?.scrollToItem(targetPageNumber - 1);
   };
-
-  // const [
-  //   _dummy,
-  //   outlineCommandCallbacks,
-  //   {onOutlineLoadSuccess},
-  // ] = useOutlineCommand({
-  //   pdf,
-  //   isModalOpen,
-  //   jumpPage,
-  //   outlineSelector,
-  // });
 
   const setScaleAndScroll = (newScale: number) => {
     listRef.current?.scrollTo(scrollOffset * newScale / scale);
@@ -308,8 +320,22 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
 
     sidebarToggle: () => setIsSidebarOpen(!isSidebarOpen),
 
-    forwardPageHistory: notImplemented,
-    backwardPageHistory: notImplemented,
+    forwardPageHistory: () => {
+      if (pageHistory.length > 0 && pageHistoryIndex + 1 < pageHistory.length) {
+        setPageHistoryIndex(pageHistoryIndex + 1);
+        jumpPage(pageHistory[pageHistoryIndex + 1], {
+          isPushHistory: false,
+        });
+      }
+    },
+    backwardPageHistory: () => {
+      if (pageHistory.length > 0 && pageHistoryIndex - 1 >= 0) {
+        setPageHistoryIndex(pageHistoryIndex - 1);
+        jumpPage(pageHistory[pageHistoryIndex - 1], {
+          isPushHistory: false,
+        });
+      }
+    },
 
     commandPaletteOpen: async () => {
       if (isModalOpen) return;
@@ -428,6 +454,8 @@ const KFPDFViewer: FC<KFPDFViewerProps> = ({
                   rotate,
                   repeatCount,
                   isModalOpen,
+                  pageHistoryIndex,
+                  pageHistory: JSON.stringify(pageHistory),
                 }, null, '  ')
               }
             </code></pre>
